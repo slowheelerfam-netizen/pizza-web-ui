@@ -1,0 +1,174 @@
+[
+  {
+    "id": "52401bce-475d-47ac-90d8-3f94055a5377",
+    "status": "COMPLETED",
+    "items": [
+      {
+        "name": "Margherita",
+        "price": 10,
+        "id": 1769997116953
+      }
+    ],
+    "totalPrice": 10,
+    "createdAt": "2026-02-02T01:52:07.190Z",
+    "updatedAt": "2026-02-02T02:17:49.524Z",
+    "estimatedReadyAt": null,
+    "actualReadyAt": null,
+    "completedAt": "2026-02-02T02:17:49.524Z",
+    "isNoContact": false,
+    "customerSnapshot": {
+      "customerId": null,
+      "name": "Walk-in",
+      "phone": null,
+      "isWalkIn": true
+    }
+  },
+  {
+    "id": "de092627-1901-418f-b23b-f7d766d6ea33",
+    "status": "COMPLETED",
+    "items": [
+      {
+        "name": "Margherita",
+        "price": 10,
+        "id": 1769997995433
+      }
+    ],
+    "totalPrice": 10,
+    "createdAt": "2026-02-02T02:06:36.494Z",
+    "updatedAt": "2026-02-02T02:18:04.630Z",
+    "estimatedReadyAt": null,
+    "actualReadyAt": null,
+    "completedAt": "2026-02-02T02:18:04.630Z",
+    "isNoContact": false,
+    "customerSnapshot": {
+      "customerId": null,
+      "name": "Walk-in",
+      "phone": null,
+      "isWalkIn": true
+    }
+  },
+  {
+    "id": "009c6955-1359-49b1-92df-d2257c2126e3",
+    "status": "CREATED",
+    "items": [
+      {
+        "name": "Pepperoni",
+        "price": 12,
+        "id": 1770000513613
+      }
+    ],
+    "totalPrice": 12,
+    "createdAt": "2026-02-02T02:48:36.109Z",
+    "updatedAt": "2026-02-02T02:48:36.109Z",
+    "estimatedReadyAt": null,
+    "actualReadyAt": null,
+    "completedAt": null,
+    "isNoContact": false,
+    "customerSnapshot": {
+      "customerId": null,
+      "name": "Walk-in",
+      "phone": null,
+      "isWalkIn": true
+    }
+  },
+  {
+    "id": "62dad046-e4da-4dda-b1cd-632cc79eb36c",
+    "createdAt": "2026-02-02T04:14:54.417Z",
+    "updatedAt": null,
+    "estimatedReadyAt": null,
+    "actualReadyAt": null,
+    "completedAt": null,
+    "isNoContact": false,
+    "customerSnapshot": {
+      "customerId": null,
+      "name": "Walk-in",
+      "phone": null,
+      "isWalkIn": true
+    }
+  },
+  {
+    "id": "8de1552a-335b-4b2f-988e-d75d5c605db8",
+    "createdAt": "2026-02-02T04:20:42.358Z",
+    "updatedAt": null,
+    "estimatedReadyAt": null,
+    "actualReadyAt": null,
+    "completedAt": null,
+    "isNoContact": false,
+    "customerSnapshot": {
+      "customerId": null,
+      "name": "Walk-in",
+      "phone": null,
+      "isWalkIn": true
+    }
+  },
+  {
+    "id": "49a5ca2b-f35b-4c73-9d9c-3fb24dd6fcb6",
+    "createdAt": "2026-02-02T04:24:58.817Z",
+    "updatedAt": null,
+    "estimatedReadyAt": null,
+    "actualReadyAt": null,
+    "completedAt": null,
+    "isNoContact": false,
+    "customerSnapshot": {
+      "customerId": null,
+      "name": "Walk-in",
+      "phone": null,
+      "isWalkIn": true
+    }
+  },
+  {
+    "id": "74fb5741-a9d8-4840-91d1-584fc6f359c5",
+    "items": [],
+    "totalPrice": 0,
+    "createdAt": "2026-02-02T04:28:39.709Z",
+    "updatedAt": null,
+    "estimatedReadyAt": null,
+    "actualReadyAt": null,
+    "completedAt": null,
+    "isNoContact": false,
+    "customerSnapshot": {
+      "customerId": null,
+      "name": "Walk-in",
+      "phone": null,
+      "isWalkIn": true
+    }
+  },
+  {
+    "id": "004a40c7-1413-4151-9312-e2d2c0abf7d3",
+    "status": "NEW",
+    "source": "CALL_IN",
+    "items": [],
+    "totalPrice": 0,
+    "createdAt": "2026-02-02T04:53:46.306Z",
+    "updatedAt": null,
+    "estimatedReadyAt": null,
+    "actualReadyAt": null,
+    "completedAt": null,
+    "isNoContact": false,
+    "customerSnapshot": {
+      "customerId": null,
+      "name": "Bubba Joe",
+      "phone": "2349874637",
+      "isWalkIn": false
+    }
+  },
+  {
+    "id": "1d23c3db-fc0c-4dc1-868d-574899290e80",
+    "status": "NEW",
+    "source": "CALL_IN",
+    "items": [],
+    "totalPrice": 0,
+    "createdAt": "2026-02-02T05:05:54.255Z",
+    "updatedAt": null,
+    "estimatedReadyAt": null,
+    "actualReadyAt": null,
+    "completedAt": null,
+    "isNoContact": false,
+    "customerSnapshot": {
+      "customerId": null,
+      "name": "John Henry",
+      "phone": "4135354567",
+      "isWalkIn": false
+    }
+  }
+]
