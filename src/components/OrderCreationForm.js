@@ -1,110 +1,681 @@
 'use client'
 
 import { useState } from 'react'
-import { createOrderAction } from '../app/actions'
-
-const MENU_ITEMS = [
-  { name: 'Margherita', price: 10 },
-  { name: 'Pepperoni', price: 12 },
-  { name: 'Veggie', price: 11 },
-]
+import { createOrderAction, checkCustomerWarning } from '../app/actions'
+import { MENU_ITEMS, PIZZA_SIZES, CRUST_TYPES, TOPPINGS } from '../types/models'
 
 export default function OrderCreationForm() {
+  // Cart state
   const [items, setItems] = useState([])
-  const [lastResult, setLastResult] = useState(null)
 
-  const addItem = (item) => {
-    setItems([...items, { ...item, id: Date.now() }])
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
+  // Customer State
+  const [customerName, setCustomerName] = useState('')
+  const [customerPhone, setCustomerPhone] = useState('(805)')
+  const [orderType, setOrderType] = useState('PICKUP') // PICKUP or DELIVERY
+  const [address, setAddress] = useState('')
+
+  // Warning State
+  const [warning, setWarning] = useState(null)
+  const [overrideWarning, setOverrideWarning] = useState(false)
+
+  // Validation State
+  const [validationError, setValidationError] = useState(null)
+
+  // Current Item Builder State
+  const [selectedPizza, setSelectedPizza] = useState(MENU_ITEMS[0])
+  const [selectedSize, setSelectedSize] = useState(PIZZA_SIZES.MEDIUM)
+  const [selectedCrust, setSelectedCrust] = useState(CRUST_TYPES.ORIGINAL)
+  const [selectedToppings, setSelectedToppings] = useState(
+    new Set(MENU_ITEMS[0].defaultToppings)
+  )
+  const [itemNotes, setItemNotes] = useState('') // New Notes field
+
+  // Form Submission State
+  const [lastResult, setLastResult] = useState(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Helper to check validation
+  const getValidationResult = () => {
+    if (!customerName)
+      return { valid: false, message: 'Please enter the customer name.' }
+    if (!customerPhone)
+      return { valid: false, message: 'Please enter a phone number.' }
+
+    const digitsOnly = customerPhone.replace(/\D/g, '')
+    if (digitsOnly.length < 7)
+      return {
+        valid: false,
+        message: 'Phone number must be at least 7 digits.',
+      }
+
+    if (orderType === 'DELIVERY' && !address)
+      return { valid: false, message: 'Please enter a delivery address.' }
+    if (warning && !overrideWarning)
+      return {
+        valid: false,
+        message: `Cannot proceed: ${warning.reason}. Please override warning.`,
+      }
+
+    return { valid: true, message: null }
   }
 
-  const totalPrice = items.reduce((sum, item) => sum + item.price, 0)
+  const handleOpenMenu = () => {
+    const { valid, message } = getValidationResult()
+    if (valid) {
+      setValidationError(null)
+      openModal()
+    } else {
+      setValidationError(message)
+      // User requested alert box/lightweight method
+      alert(message)
+    }
+  }
 
-  async function handleSubmit(formData) {
+  const handlePhoneBlur = async () => {
+    if (!customerPhone || customerPhone.length < 3) return
+
+    // Reset warning state before checking
+    setWarning(null)
+    setOverrideWarning(false)
+
+    const result = await checkCustomerWarning(customerPhone)
+    if (result.hasWarning) {
+      setWarning(result.warning)
+    }
+  }
+
+  // Calculate price for the current item being built
+  const calculateItemPrice = (pizza, size, crust, toppingsSet) => {
+    let price = pizza.basePrice
+
+    // Add topping prices (only charge for non-default toppings for simplicity, or all toppings?)
+    // Reverting to: Charge for ALL toppings to be safe/profitable, or strictly extra?
+    // Let's stick to the previous logic: charge if not in default, but since we reset defaults...
+    // Actually, simple model: Base price includes defaults. Any toppings added add cost?
+    // Let's just charge for every topping selected for now to be simple and robust,
+    // OR: Assume base price covers everything initially selected.
+    // Let's stick to: Base Price + Toppings Price (if not default) + Crust Price * Size Multiplier.
+
+    toppingsSet.forEach((toppingId) => {
+      const topping = Object.values(TOPPINGS).find((t) => t.id === toppingId)
+      if (topping && !pizza.defaultToppings.includes(toppingId)) {
+        price += topping.price
+      }
+    })
+
+    price += crust.price
+    price *= size.priceMultiplier
+
+    return parseFloat(price.toFixed(2))
+  }
+
+  const currentItemPrice = calculateItemPrice(
+    selectedPizza,
+    selectedSize,
+    selectedCrust,
+    selectedToppings
+  )
+
+  const toggleTopping = (toppingId) => {
+    const newToppings = new Set(selectedToppings)
+    if (newToppings.has(toppingId)) {
+      newToppings.delete(toppingId)
+    } else {
+      newToppings.add(toppingId)
+    }
+    setSelectedToppings(newToppings)
+  }
+
+  const handlePizzaChange = (pizza) => {
+    setSelectedPizza(pizza)
+    setSelectedToppings(new Set(pizza.defaultToppings))
+  }
+
+  const openModal = () => {
+    // Reset builder state
+    setSelectedPizza(MENU_ITEMS[0])
+    setSelectedSize(PIZZA_SIZES.MEDIUM)
+    setSelectedCrust(CRUST_TYPES.ORIGINAL)
+    setSelectedToppings(new Set(MENU_ITEMS[0].defaultToppings))
+    setItemNotes('')
+    setIsModalOpen(true)
+  }
+
+  const addItemToOrder = () => {
+    const item = {
+      id: Date.now(),
+      name: selectedPizza.name,
+      size: selectedSize.label,
+      crust: selectedCrust.label,
+      toppings: Array.from(selectedToppings).map(
+        (id) => Object.values(TOPPINGS).find((t) => t.id === id)?.label
+      ),
+      price: currentItemPrice,
+      notes: itemNotes,
+      details: `${selectedSize.label} | ${selectedCrust.label}`,
+    }
+    setItems([...items, item])
+    setIsModalOpen(false)
+  }
+
+  const removeItem = (indexToRemove) => {
+    setItems(items.filter((_, idx) => idx !== indexToRemove))
+  }
+
+  const cartTotal = items.reduce((sum, item) => sum + item.price, 0)
+
+  async function handleSubmit() {
+    setIsSubmitting(true)
+    const formData = new FormData()
+    formData.append('customerName', customerName)
+    formData.append('customerPhone', customerPhone)
+    formData.append('type', orderType)
+    formData.append('address', address)
     formData.append('items', JSON.stringify(items))
-    formData.append('totalPrice', totalPrice.toString())
+    formData.append('totalPrice', cartTotal.toString())
 
     const result = await createOrderAction(null, formData)
     setLastResult(result)
+    setIsSubmitting(false)
 
     if (result.success) {
+      // Reset everything
       setItems([])
+      setCustomerName('')
+      setCustomerPhone('(805)')
+      setAddress('')
+      setOrderType('PICKUP')
+      setItemNotes('')
     }
   }
 
   return (
-    <div className="mb-8 rounded border bg-white p-4 shadow-sm">
-      <h2 className="mb-4 text-xl font-bold">New Order</h2>
+    <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl shadow-gray-200/50">
+      <div className="border-b border-gray-100 bg-gray-50/50 px-6 py-4">
+        <h2 className="text-lg font-semibold text-gray-800">
+          Create New Order
+        </h2>
+        <p className="text-sm text-gray-500">
+          Start with customer details, then add items
+        </p>
+      </div>
 
-      <form action={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium">Customer Name</label>
-          <input
-            name="customerName"
-            type="text"
-            required
-            className="mt-1 block w-full rounded border p-2"
-          />
-        </div>
+      <div className="p-6">
+        <div className="space-y-8">
+          {/* Customer Details Section */}
+          <div className="grid gap-6 md:grid-cols-2">
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                Customer Name
+              </label>
+              <input
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                type="text"
+                className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 placeholder-gray-400 transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+                placeholder="e.g. John Doe"
+              />
+            </div>
 
-        <div>
-          <label className="block text-sm font-medium">Phone Number</label>
-          <input
-            name="customerPhone"
-            type="text"
-            required
-            placeholder="555-0199"
-            className="mt-1 block w-full rounded border p-2"
-          />
-        </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                Phone Number
+              </label>
+              <input
+                value={customerPhone}
+                onChange={(e) => setCustomerPhone(e.target.value)}
+                onBlur={handlePhoneBlur}
+                type="tel"
+                placeholder="e.g. 555-0199"
+                className={`w-full rounded-lg border px-4 py-2.5 text-gray-900 placeholder-gray-400 transition-all focus:ring-2 focus:outline-none ${
+                  warning
+                    ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20'
+                    : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500/20'
+                }`}
+              />
+              {warning && (
+                <div className="animate-in fade-in slide-in-from-top-2 mt-3 rounded-lg border border-red-200 bg-red-50 p-3">
+                  <div className="flex gap-3">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                      className="h-5 w-5 flex-shrink-0 text-red-600"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <div>
+                      <h4 className="text-sm font-bold text-red-800">
+                        Warning: {warning.reason}
+                      </h4>
+                      <p className="mt-1 text-xs text-red-700">
+                        Flagged on{' '}
+                        {new Date(warning.createdAt).toLocaleDateString()}
+                      </p>
+                      <label className="mt-3 flex cursor-pointer items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={overrideWarning}
+                          onChange={(e) => setOverrideWarning(e.target.checked)}
+                          className="h-4 w-4 rounded border-red-300 text-red-600 focus:ring-red-500"
+                        />
+                        <span className="text-xs font-bold text-red-800 hover:text-red-900">
+                          Override Warning
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
 
-        <div>
-          <label className="mb-2 block text-sm font-medium">
-            Items ({items.length}) - Total: ${totalPrice}
-          </label>
-          <div className="flex gap-2">
-            {MENU_ITEMS.map((item) => (
-              <button
-                key={item.name}
-                type="button"
-                onClick={() => addItem(item)}
-                className="rounded bg-gray-200 px-3 py-1 text-sm hover:bg-gray-300"
-              >
-                + {item.name} (${item.price})
-              </button>
-            ))}
+            {/* Delivery Toggle */}
+            <div className="md:col-span-2">
+              <div className="flex items-center gap-6">
+                <label className="flex cursor-pointer items-center gap-2">
+                  <input
+                    type="radio"
+                    name="orderType"
+                    checked={orderType === 'PICKUP'}
+                    onChange={() => setOrderType('PICKUP')}
+                    className="text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700">
+                    Pickup
+                  </span>
+                </label>
+                <label className="flex cursor-pointer items-center gap-2">
+                  <input
+                    type="radio"
+                    name="orderType"
+                    checked={orderType === 'DELIVERY'}
+                    onChange={() => setOrderType('DELIVERY')}
+                    className="text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700">
+                    Delivery
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            {/* Address Field - Conditional */}
+            {orderType === 'DELIVERY' && (
+              <div className="md:col-span-2">
+                <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                  Delivery Address
+                </label>
+                <input
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  type="text"
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 placeholder-gray-400 transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+                  placeholder="Street address, Apt, City..."
+                />
+              </div>
+            )}
           </div>
-          <ul className="mt-2 text-sm text-gray-600">
-            {items.map((item, idx) => (
-              <li key={idx}>• {item.name}</li>
-            ))}
-          </ul>
-        </div>
 
-        <button
-          type="submit"
-          className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-        >
-          Create Order
-        </button>
-      </form>
+          <hr className="border-gray-100" />
 
-      {lastResult && (
-        <div
-          className={`mt-4 rounded p-3 ${lastResult.success ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}
-        >
-          <p className="font-bold">{lastResult.message}</p>
-          {lastResult.warnings && lastResult.warnings.length > 0 && (
-            <div className="mt-2">
-              <p className="text-sm font-semibold text-yellow-800">
-                ⚠️ Advisory Warnings:
+          {/* Action Buttons: Open Menu */}
+          <div>
+            <button
+              type="button"
+              onClick={handleOpenMenu}
+              className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-indigo-300 bg-indigo-50/50 py-4 text-indigo-700 transition-all hover:border-indigo-500 hover:bg-indigo-50"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                className="h-5 w-5"
+              >
+                <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
+              </svg>
+              <span className="font-semibold">Add Items from Menu</span>
+            </button>
+            {validationError && (
+              <p className="mt-2 text-center text-sm font-medium text-red-600">
+                {validationError}
               </p>
-              <ul className="list-disc pl-5 text-sm text-yellow-700">
-                {lastResult.warnings.map((w, i) => (
-                  <li key={i}>{w.reason}</li>
+            )}
+          </div>
+
+          {/* Cart / Order Summary */}
+          {items.length > 0 && (
+            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <h3 className="text-sm font-bold tracking-wide text-gray-900 uppercase">
+                  Current Order
+                </h3>
+                <span className="rounded-md bg-indigo-100 px-2.5 py-1 text-xs font-bold text-indigo-700">
+                  Total: ${cartTotal.toFixed(2)}
+                </span>
+              </div>
+              <ul className="space-y-3">
+                {items.map((item, idx) => (
+                  <li
+                    key={item.id}
+                    className="flex items-start justify-between rounded-lg bg-white p-3 shadow-sm"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-gray-900">
+                          {item.name}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          (${item.price.toFixed(2)})
+                        </span>
+                      </div>
+                      <p className="mt-1 text-xs text-gray-600">
+                        {item.details}
+                      </p>
+                      <p className="max-w-[200px] truncate text-xs text-gray-500">
+                        {item.toppings?.join(', ')}
+                      </p>
+                      {item.notes && (
+                        <p className="mt-1 text-xs font-medium text-amber-600 italic">
+                          Note: {item.notes}
+                        </p>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeItem(idx)}
+                      className="text-gray-400 transition-colors hover:text-red-500"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        className="h-5 w-5"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </button>
+                  </li>
                 ))}
               </ul>
             </div>
           )}
+
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                if (items.length === 0) {
+                  alert(
+                    'Please add at least one item to the order before placing it.'
+                  )
+                  return
+                }
+                handleSubmit()
+              }}
+              disabled={isSubmitting}
+              className="w-full rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 px-4 py-4 text-base font-bold text-white shadow-lg transition-all hover:from-indigo-500 hover:to-purple-500 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isSubmitting
+                ? 'Processing Order...'
+                : `Place Order ($${cartTotal.toFixed(2)})`}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {lastResult && (
+        <div
+          className={`border-t px-6 py-4 ${
+            lastResult.success ? 'bg-green-50/50' : 'bg-red-50/50'
+          }`}
+        >
+          <div className="flex gap-3">
+            <div
+              className={`flex-shrink-0 ${lastResult.success ? 'text-green-500' : 'text-red-500'}`}
+            >
+              {lastResult.success ? (
+                <svg
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              )}
+            </div>
+            <div>
+              <h3
+                className={`text-sm font-bold ${lastResult.success ? 'text-green-800' : 'text-red-800'}`}
+              >
+                {lastResult.success ? 'Success!' : 'Order Failed'}
+              </h3>
+              <p
+                className={`mt-1 text-sm ${lastResult.success ? 'text-green-700' : 'text-red-700'}`}
+              >
+                {lastResult.message}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL OVERLAY */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white shadow-2xl">
+            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-100 bg-white px-6 py-4">
+              <h2 className="text-xl font-bold text-gray-900">
+                Add Item to Order
+              </h2>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="rounded-full p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+              >
+                <svg
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <div className="p-6">
+              {/* Pizza Builder Content */}
+              <div className="space-y-6">
+                <div>
+                  <label className="mb-3 block text-sm font-medium text-gray-700">
+                    Select Pizza
+                  </label>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    {MENU_ITEMS.map((pizza) => (
+                      <button
+                        key={pizza.id}
+                        type="button"
+                        onClick={() => handlePizzaChange(pizza)}
+                        className={`flex flex-col items-start rounded-xl border p-3 text-left transition-all ${
+                          selectedPizza.id === pizza.id
+                            ? 'border-indigo-600 bg-indigo-50 ring-1 ring-indigo-600'
+                            : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        <span
+                          className={`text-sm font-semibold ${selectedPizza.id === pizza.id ? 'text-indigo-900' : 'text-gray-900'}`}
+                        >
+                          {pizza.name}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          ${pizza.basePrice}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid gap-6 md:grid-cols-2">
+                  <div>
+                    <label className="mb-3 block text-sm font-medium text-gray-700">
+                      Size
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {Object.values(PIZZA_SIZES).map((size) => (
+                        <button
+                          key={size.id}
+                          type="button"
+                          onClick={() => setSelectedSize(size)}
+                          className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
+                            selectedSize.id === size.id
+                              ? 'bg-indigo-600 text-white shadow-md'
+                              : 'bg-white text-gray-600 ring-1 ring-gray-200 hover:bg-gray-50'
+                          }`}
+                        >
+                          {size.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="mb-3 block text-sm font-medium text-gray-700">
+                      Crust
+                    </label>
+                    <select
+                      value={selectedCrust.id}
+                      onChange={(e) =>
+                        setSelectedCrust(
+                          Object.values(CRUST_TYPES).find(
+                            (c) => c.id === e.target.value
+                          )
+                        )
+                      }
+                      className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+                    >
+                      {Object.values(CRUST_TYPES).map((crust) => (
+                        <option key={crust.id} value={crust.id}>
+                          {crust.label}{' '}
+                          {crust.price > 0 && `(+$${crust.price})`}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="mb-3 block text-sm font-medium text-gray-700">
+                    Toppings
+                    <span className="ml-2 text-xs font-normal text-gray-500">
+                      (Selected: {selectedToppings.size})
+                    </span>
+                  </label>
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    {Object.values(TOPPINGS).map((topping) => {
+                      const isSelected = selectedToppings.has(topping.id)
+                      return (
+                        <button
+                          key={topping.id}
+                          type="button"
+                          onClick={() => toggleTopping(topping.id)}
+                          className={`flex items-center justify-between rounded-lg border px-3 py-2 text-sm transition-all ${
+                            isSelected
+                              ? 'border-indigo-200 bg-indigo-50 text-indigo-700'
+                              : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                          }`}
+                        >
+                          <span>{topping.label}</span>
+                          {isSelected && (
+                            <svg
+                              className="h-4 w-4 text-indigo-600"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Important Notes */}
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-gray-700">
+                    Important Notes / Special Instructions
+                  </label>
+                  <textarea
+                    value={itemNotes}
+                    onChange={(e) => setItemNotes(e.target.value)}
+                    placeholder="e.g. Extra crispy, no onions, ranch dressing on side..."
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+                    rows={3}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="sticky bottom-0 border-t border-gray-100 bg-gray-50 p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500">Total Price</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    ${currentItemPrice.toFixed(2)}
+                  </p>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setIsModalOpen(false)}
+                    className="rounded-lg border border-gray-300 bg-white px-6 py-2.5 text-sm font-semibold text-gray-700 shadow-sm hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={addItemToOrder}
+                    className="rounded-lg bg-indigo-600 px-8 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
+                  >
+                    Add to Order
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

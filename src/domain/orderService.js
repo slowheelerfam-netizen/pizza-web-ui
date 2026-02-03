@@ -20,41 +20,55 @@ export class OrderService {
   async createOrder(input) {
     console.log('[OrderService.createOrder] input:', input)
 
-    const {
-      customerName,
-      customerPhone,
-      source,
-      items,
-      totalPrice,
-    } = input
+    try {
+      const {
+        customerName,
+        customerPhone,
+        type,
+        address,
+        source,
+        items,
+        totalPrice,
+      } = input
 
-    // Invariant: every order must persist a customer snapshot
-    console.log('CREATE ORDER INPUT', customerName, customerPhone)
+      // Invariant: every order must persist a customer snapshot
+      console.log('CREATE ORDER INPUT', customerName, customerPhone)
 
-    const customerSnapshot = {
-      customerId: null,
-      name: customerName || 'Walk-in',
-      phone: customerPhone || null,
-      isWalkIn: !customerName,
+      const customerSnapshot = {
+        customerId: null,
+        name: customerName || 'Walk-in',
+        phone: customerPhone || null,
+        type: type || 'PICKUP',
+        address: address || null,
+        isWalkIn: !customerName,
+      }
+
+      const order = {
+        id: crypto.randomUUID(),
+        status: ORDER_STATUS.NEW,
+        source,
+        items,
+        totalPrice,
+        createdAt: new Date().toISOString(),
+        updatedAt: null,
+        estimatedReadyAt: null,
+        actualReadyAt: null,
+        completedAt: null,
+        isNoContact: false,
+        customerSnapshot,
+      }
+
+      await this.orders.create(order)
+
+      // ✅ SUCCESS LOG (this is what you were missing)
+      console.info('[ORDER_CREATED]', order.id, order.customerSnapshot.name)
+
+      return order
+    } catch (err) {
+      // ❌ FAILURE LOG (non-silent)
+      console.error('[ORDER_CREATE_FAILED]', err.message)
+      throw err
     }
-
-    const order = {
-      id: crypto.randomUUID(),
-      status: ORDER_STATUS.NEW,
-      source,
-      items,
-      totalPrice,
-      createdAt: new Date().toISOString(),
-      updatedAt: null,
-      estimatedReadyAt: null,
-      actualReadyAt: null,
-      completedAt: null,
-      isNoContact: false,
-      customerSnapshot,
-    }
-
-    await this.orders.create(order)
-    return order
   }
 
   async updateStatus(orderId, newStatus, customer = null) {
@@ -64,9 +78,7 @@ export class OrderService {
     }
 
     if (!isValidTransition(order.status, newStatus)) {
-      throw new Error(
-        `Invalid transition from ${order.status} to ${newStatus}`
-      )
+      throw new Error(`Invalid transition from ${order.status} to ${newStatus}`)
     }
 
     order.status = newStatus
@@ -85,6 +97,30 @@ export class OrderService {
     return order
   }
 
+  async updateOrderDetails(orderId, updates) {
+    const order = await this.orders.findById(orderId)
+    if (!order) {
+      throw new Error(`Order ${orderId} not found`)
+    }
+
+    // Update allowed fields
+    if (updates.customerSnapshot) {
+      order.customerSnapshot = {
+        ...order.customerSnapshot,
+        ...updates.customerSnapshot
+      }
+    }
+    
+    if (updates.items) order.items = updates.items
+    if (updates.totalPrice) order.totalPrice = updates.totalPrice
+    
+    order.updatedAt = new Date().toISOString()
+
+    await this.orders.update(order)
+    console.info('[ORDER_UPDATED]', order.id)
+    return order
+  }
+
   async adminOverrideStatus(
     adminId,
     orderId,
@@ -92,18 +128,14 @@ export class OrderService {
     comment,
     customer = null
   ) {
-    const updatedOrder = await this.updateStatus(
-      orderId,
-      newStatus,
-      customer
-    )
+    const updatedOrder = await this.updateStatus(orderId, newStatus, customer)
 
     const actionLog = logAdminAction(
       adminId,
       'ORDER',
       orderId,
       'STATUS_OVERRIDE',
-      comment
+      `${reason}${comment ? ': ' + comment : ''}`
     )
 
     await this.actions.create(actionLog)

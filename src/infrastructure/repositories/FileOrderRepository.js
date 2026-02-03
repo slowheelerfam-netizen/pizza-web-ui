@@ -1,7 +1,7 @@
 import fs from 'fs/promises'
-import path from 'path'
+import { DB_PATHS } from '../../lib/config'
 
-const DATA_FILE = path.join(process.cwd(), 'src/data/orders.json')
+const DATA_FILE = DB_PATHS.ORDERS
 const TMP_FILE = `${DATA_FILE}.tmp`
 
 let writeLock = Promise.resolve()

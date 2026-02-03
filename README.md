@@ -1,3 +1,38 @@
+# Pizza Project
+
+## Project Architecture
+
+This project follows a **Clean Architecture** (Layered Architecture) pattern to ensure separation of concerns and maintainability.
+
+### Core Layers
+
+- **Domain Layer** (`src/domain`): Contains the core business logic and entities (e.g., `OrderService`, `orderState`). This layer is framework-independent.
+- **Infrastructure Layer** (`src/infrastructure`): Handles data persistence and external services. It implements the repositories defined by the domain requirements (e.g., `FileOrderRepository`).
+- **Presentation Layer** (`src/app`): Built with Next.js App Router. It handles API routes and UI components, interacting with the domain layer.
+
+### Data Persistence
+
+The project uses a **File-based Database** system located in `src/data/`.
+
+- Data is stored in JSON files (`orders.json`, `notifications.json`, etc.).
+- The `FileOrderRepository` handles read/write operations with a locking mechanism to prevent race conditions.
+
+## Project Structure
+
+```
+src/
+├── app/              # Next.js App Router (Presentation Layer)
+│   ├── api/          # API Routes (Admin, Orders)
+│   └── components/   # React UI Components
+├── domain/           # Business Logic (Pure JS, Framework Independent)
+├── infrastructure/   # Data Access (Repositories)
+├── data/             # JSON Storage (Database)
+├── types/            # JSDoc Types & Models
+└── lib/              # Shared Utilities
+```
+
+---
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started

@@ -1,62 +1,141 @@
 'use client'
 
 import { useState } from 'react'
-import { updateStatusAction, adminOverrideAction } from '../app/actions'
 import { ORDER_STATUS } from '../types/models'
+import { OVERRIDE_REASONS } from '../types/adminOverrideReasons'
+import OrderEditModal from './OrderEditModal'
+import React from 'react'
 
-export default function AdminDashboard({ orders, warnings, actions }) {
+export default function AdminDashboard({ orders }) {
   const [loading, setLoading] = useState(null)
+  const [overrideOrder, setOverrideOrder] = useState(null)
+  const [editingOrder, setEditingOrder] = useState(null)
+  const [expandedOrderId, setExpandedOrderId] = useState(null)
+  const [reason, setReason] = useState('')
+  const [comment, setComment] = useState('')
 
-  async function handleAdvance(orderId, currentStatus) {
-    let nextStatus = null
-    switch (currentStatus) {
-      case ORDER_STATUS.CREATED:
-        nextStatus = ORDER_STATUS.CONFIRMED
-        break
-      case ORDER_STATUS.CONFIRMED:
-        nextStatus = ORDER_STATUS.IN_PREP
-        break
-      case ORDER_STATUS.IN_PREP:
-        nextStatus = ORDER_STATUS.READY
-        break
-      case ORDER_STATUS.READY:
-        nextStatus = ORDER_STATUS.COMPLETED
-        break
-      default:
-        return
-    }
-
-    setLoading(orderId)
-    await updateStatusAction(orderId, nextStatus)
-    setLoading(null)
+  const toggleExpand = (orderId) => {
+    setExpandedOrderId(expandedOrderId === orderId ? null : orderId)
   }
 
-  async function handleOverride(orderId) {
-    const newStatus = prompt(
-      'Enter new status (CREATED, CONFIRMED, IN_PREP, READY, COMPLETED, CANCELLED):'
-    )
-    if (!newStatus) return
-
-    const comment = prompt('Enter mandatory audit comment:')
-    if (!comment) {
-      alert('Comment is required for overrides!')
-      return
-    }
-
+  async function handleOverride(orderId, status, reason, comment) {
     setLoading(orderId)
-    const result = await adminOverrideAction(orderId, newStatus, comment)
+    await fetch('/api/admin/override', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        orderId,
+        newStatus: status,
+        reason,
+        comment,
+      }),
+    })
     setLoading(null)
-
-    if (!result.success) {
-      alert('Error: ' + result.message)
-    }
+    setOverrideOrder(null)
+    setReason('')
+    setComment('')
   }
 
   return (
-    <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-      <div className="md:col-span-2">
-        <h2 className="mb-4 text-xl font-bold">Active Orders</h2>
-        <div className="overflow-hidden rounded bg-white shadow">
+    <div className="space-y-6">
+      {/* ===== Edit Order Modal ===== */}
+      <OrderEditModal
+        order={editingOrder}
+        isOpen={!!editingOrder}
+        onClose={() => setEditingOrder(null)}
+      />
+
+      {/* ===== Delete / Override Modal ===== */}
+      {overrideOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+            <h3 className="mb-4 text-xl font-bold text-red-600">
+              Delete Order #{overrideOrder.id.slice(0, 8)}
+            </h3>
+            <p className="mb-6 text-sm font-medium text-gray-900">
+              Are you sure you want to delete this order? This action cannot be
+              undone. The order status will be set to{' '}
+              <strong className="text-red-600">CANCELLED</strong>.
+            </p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="mb-1 block text-sm font-bold text-gray-900">
+                  Reason for Deletion
+                </label>
+                <select
+                  className="w-full rounded-lg border border-gray-300 p-2.5 font-medium text-gray-900 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                >
+                  <option value="">Select reason</option>
+                  {Object.values(OVERRIDE_REASONS).map((r) => (
+                    <option key={r} value={r}>
+                      {r.replace('_', ' ')}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-bold text-gray-900">
+                  Comment {reason === 'OTHER' && '(required)'}
+                </label>
+                <input
+                  className="w-full rounded-lg border border-gray-300 p-2.5 font-medium text-gray-900 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="Add details..."
+                />
+              </div>
+            </div>
+
+            <div className="mt-8 flex gap-3">
+              <button
+                className="flex-1 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-red-500 disabled:opacity-50"
+                disabled={
+                  !reason ||
+                  (reason === 'OTHER' && !comment) ||
+                  loading === overrideOrder.id
+                }
+                onClick={() =>
+                  handleOverride(
+                    overrideOrder.id,
+                    ORDER_STATUS.CANCELLED,
+                    reason,
+                    comment
+                  )
+                }
+              >
+                {loading === overrideOrder.id
+                  ? 'Deleting...'
+                  : 'Confirm Delete'}
+              </button>
+
+              <button
+                className="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+                onClick={() => {
+                  setOverrideOrder(null)
+                  setReason('')
+                  setComment('')
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== Orders Table ===== */}
+      <div className="overflow-hidden rounded-2xl border border-indigo-100 bg-white shadow-sm">
+        <div className="border-b border-indigo-100 bg-indigo-50/50 px-6 py-4">
+          <h2 className="text-lg font-bold text-indigo-900">
+            Active Orders Queue
+          </h2>
+        </div>
+
+        <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -74,110 +153,180 @@ export default function AdminDashboard({ orders, warnings, actions }) {
                 </th>
               </tr>
             </thead>
+
             <tbody className="divide-y divide-gray-200 bg-white">
               {orders.length === 0 ? (
                 <tr>
                   <td
                     colSpan="4"
-                    className="px-6 py-4 text-center text-gray-500"
+                    className="px-6 py-12 text-center text-gray-500"
                   >
-                    No orders yet
+                    <div className="flex flex-col items-center gap-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="h-8 w-8 text-gray-300"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"
+                        />
+                      </svg>
+                      <span className="font-medium">No active orders</span>
+                      <span className="text-xs">
+                        New orders will appear here
+                      </span>
+                    </div>
                   </td>
                 </tr>
               ) : (
                 orders.map((order) => (
-                  <tr key={order.id}>
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">
+                  <React.Fragment key={order.id}>
+                    <tr
+                      className="group cursor-pointer hover:bg-gray-50/50"
+                      onClick={() => toggleExpand(order.id)}
+                    >
+                      <td className="px-6 py-4">
+                        <div className="font-medium text-gray-900">
                           {order.customerSnapshot?.name ?? 'Walk-in customer'}
-                      </div>
-                      <div className="text-xs text-gray-400">
-                          ID: {order.id.slice(0, 8)}…
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex rounded-full px-2 text-xs leading-5 font-semibold ${
-                          order.status === ORDER_STATUS.READY
-                            ? 'bg-green-100 text-green-800'
-                            : order.status === ORDER_STATUS.CANCELLED
-                              ? 'bg-red-100 text-red-800'
-                              : 'bg-blue-100 text-blue-800'
-                        }`}
-                      >
-                        {order.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      ${order.totalPrice}
-                    </td>
-                    <td className="space-x-2 px-6 py-4 text-sm font-medium">
-                      {order.status !== ORDER_STATUS.COMPLETED &&
-                        order.status !== ORDER_STATUS.CANCELLED && (
+                        </div>
+                        <div className="font-mono text-xs text-gray-400">
+                          #{order.id.slice(0, 8)}
+                        </div>
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <span
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                            order.status === ORDER_STATUS.NEW
+                              ? 'bg-blue-100 text-blue-800'
+                              : order.status === ORDER_STATUS.CONFIRMED
+                                ? 'bg-purple-100 text-purple-800'
+                                : order.status === ORDER_STATUS.IN_PREP
+                                  ? 'bg-orange-100 text-orange-800'
+                                  : order.status === ORDER_STATUS.READY
+                                    ? 'bg-green-100 text-green-800'
+                                    : 'bg-gray-100 text-gray-800'
+                          }`}
+                        >
+                          {order.status}
+                        </span>
+                      </td>
+
+                      <td className="px-6 py-4 text-sm font-medium text-gray-700">
+                        ${order.totalPrice}
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
                           <button
-                            onClick={() =>
-                              handleAdvance(order.id, order.status)
-                            }
-                            disabled={loading === order.id}
-                            className="text-indigo-600 hover:text-indigo-900 disabled:opacity-50"
+                            className="text-sm font-medium text-indigo-600 hover:text-indigo-900"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setEditingOrder(order)
+                            }}
                           >
-                            Advance
+                            Edit
                           </button>
-                        )}
-                      <button
-                        onClick={() => handleOverride(order.id)}
-                        disabled={loading === order.id}
-                        className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                      >
-                        Override
-                      </button>
-                    </td>
-                  </tr>
+
+                          <button
+                            className="text-sm font-medium text-red-600 hover:text-red-900"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setOverrideOrder(order)
+                            }}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    {expandedOrderId === order.id && (
+                      <tr className="bg-indigo-50/30">
+                        <td colSpan="4" className="px-6 py-4">
+                          <div className="rounded-lg border border-indigo-100 bg-white p-4 shadow-sm">
+                            <div className="mb-4 grid gap-4 md:grid-cols-2">
+                              <div>
+                                <h4 className="text-xs font-bold tracking-wider text-gray-500 uppercase">
+                                  Customer Details
+                                </h4>
+                                <p className="text-sm font-medium text-gray-900">
+                                  {order.customerSnapshot?.phone || 'No phone'}
+                                </p>
+                              </div>
+                              <div>
+                                <h4 className="text-xs font-bold tracking-wider text-gray-500 uppercase">
+                                  Order Type
+                                </h4>
+                                <p className="text-sm font-medium text-gray-900">
+                                  {order.customerSnapshot?.type === 'DELIVERY'
+                                    ? '🚚 Delivery'
+                                    : '🛍️ Pickup'}
+                                </p>
+                                {order.customerSnapshot?.type ===
+                                  'DELIVERY' && (
+                                  <p className="text-sm text-gray-600">
+                                    {order.customerSnapshot?.address}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="border-t border-gray-100 pt-4">
+                              <div className="mb-2 flex items-center justify-between">
+                                <h4 className="text-xs font-bold tracking-wider text-gray-500 uppercase">
+                                  Order Items
+                                </h4>
+                                <button
+                                  className="rounded border border-indigo-200 bg-indigo-50 px-2 py-1 text-xs font-bold text-indigo-600 hover:bg-indigo-100 hover:text-indigo-800"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setEditingOrder(order)
+                                  }}
+                                >
+                                  Edit Order
+                                </button>
+                              </div>
+                              <ul className="space-y-3">
+                                {order.items?.map((item, idx) => (
+                                  <li
+                                    key={idx}
+                                    className="flex flex-col gap-1 rounded-md bg-gray-50 p-2 text-sm"
+                                  >
+                                    <div className="flex items-center justify-between font-medium text-gray-900">
+                                      <span>
+                                        {item.name} ({item.size})
+                                      </span>
+                                      <span>${item.price.toFixed(2)}</span>
+                                    </div>
+                                    <div className="text-xs text-gray-500">
+                                      {item.crust} Crust •{' '}
+                                      {item.toppings?.join(', ') ||
+                                        'No toppings'}
+                                    </div>
+                                    {item.notes && (
+                                      <div className="mt-1 inline-block rounded border border-amber-100 bg-amber-50 px-1.5 py-0.5 text-xs font-bold text-amber-600">
+                                        Note: {item.notes}
+                                      </div>
+                                    )}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 ))
               )}
             </tbody>
           </table>
         </div>
-      </div>
-
-      <div>
-        <h3 className="mb-2 text-lg font-bold">System Warnings</h3>
-        <ul className="space-y-2 rounded bg-white p-4 text-sm shadow">
-          {warnings.length === 0 && (
-            <li className="text-gray-500">No active warnings</li>
-          )}
-          {warnings.map((w) => (
-            <li key={w.id} className="border-l-4 border-yellow-400 pl-2">
-              <span className="font-semibold">{w.reason}</span> <br />
-              <span className="text-xs text-gray-500">
-                Target: {JSON.stringify(w.customerIdentifier)}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div>
-        <h3 className="mb-2 text-lg font-bold">Audit Log (Recent)</h3>
-        <ul className="max-h-64 space-y-2 overflow-y-auto rounded bg-white p-4 text-sm shadow">
-          {actions.length === 0 && (
-            <li className="text-gray-500">No actions recorded</li>
-          )}
-          {actions
-            .slice()
-            .reverse()
-            .map((a) => (
-              <li key={a.id} className="border-b pb-2 last:border-0">
-                <span className="text-xs font-semibold text-gray-400">
-                  {new Date(a.timestamp).toLocaleTimeString()}
-                </span>{' '}
-                <br />
-                <span className="font-medium">{a.actionType}</span> by{' '}
-                {a.adminId} <br />
-                <span className="text-gray-600 italic">"{a.comment}"</span>
-              </li>
-            ))}
-        </ul>
       </div>
     </div>
   )

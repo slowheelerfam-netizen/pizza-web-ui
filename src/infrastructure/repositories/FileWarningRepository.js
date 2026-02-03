@@ -1,7 +1,7 @@
 import fs from 'fs/promises'
-import path from 'path'
+import { DB_PATHS } from '../../lib/config'
 
-const DATA_PATH = path.join(process.cwd(), 'src/data/warnings.json')
+const DATA_PATH = DB_PATHS.WARNINGS
 const TMP_PATH = `${DATA_PATH}.tmp`
 
 let writeLock = Promise.resolve()

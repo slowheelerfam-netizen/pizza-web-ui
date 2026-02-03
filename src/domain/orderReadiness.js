@@ -1,11 +1,7 @@
 import { ORDER_STATUS } from '../types/models'
-import { notifyCustomer } from './notificationService'
+import crypto from 'crypto'
 
-export async function handleOrderReadiness(
-  order,
-  customer,
-  notificationRepo
-) {
+export async function handleOrderReadiness(order, customer, notificationRepo) {
   if (order.status !== ORDER_STATUS.READY) {
     return null
   }
@@ -17,7 +13,17 @@ export async function handleOrderReadiness(
   }
 
   try {
-    const notification = await notifyCustomer(order, 'READY')
+    // Simulate notification creation
+    const notification = {
+      id: crypto.randomUUID(),
+      orderId: order.id,
+      customerName: order.customerSnapshot.name,
+      phone: phone,
+      type: 'SMS',
+      status: 'SENT',
+      message: `Hello ${order.customerSnapshot.name}, your order is READY!`,
+      sentAt: new Date().toISOString(),
+    }
 
     if (notification && notificationRepo?.create) {
       await notificationRepo.create(notification)

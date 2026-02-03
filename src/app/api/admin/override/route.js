@@ -1,0 +1,30 @@
+import { NextResponse } from 'next/server'
+import { orderService } from '@/lib/services'
+
+export async function POST(request) {
+  try {
+    const { orderId, status } = await request.json()
+
+    if (!orderId || !status) {
+      return NextResponse.json(
+        { message: 'Missing orderId or status' },
+        { status: 400 }
+      )
+    }
+
+    // Admin override ignores state transitions validation usually, 
+    // but our service enforces it. For now, we use the standard update.
+    const updatedOrder = await orderService.updateStatus(orderId, status)
+
+    return NextResponse.json(
+      { message: 'Order status updated successfully', order: updatedOrder },
+      { status: 200 }
+    )
+  } catch (error) {
+    console.error('[API_ADMIN_OVERRIDE_POST_FAILED]', error)
+    return NextResponse.json(
+      { message: error.message || 'Failed to update order status' },
+      { status: 500 }
+    )
+  }
+}
