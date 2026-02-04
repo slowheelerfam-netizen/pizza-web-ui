@@ -1,7 +1,16 @@
 export default function Home() {
   return (
-    <main>
-      <h1>Public website coming soon.</h1>
+    <main style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
+      <h1>Internal Pizza System</h1>
+
+      <p>This is an internal application.</p>
+
+      <ul>
+        <li><a href="/register">Register</a></li>
+        <li><a href="/kitchen">Kitchen</a></li>
+        <li><a href="/monitor">Monitor</a></li>
+        <li><a href="/oven">Oven Station</a></li>
+      </ul>
     </main>
   )
 }
