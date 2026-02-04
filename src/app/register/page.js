@@ -1,3 +1,12 @@
+'use client'
+
+export default function RegisterPage() {
+  return (
+    <div style={{ padding: '2rem' }}>
+      <h2>Register page placeholder</h2>
+    </div>
+  )
+}
 import { fetchDashboardData, updateStatusAction } from '../actions'
 import AdminDashboard from '../../components/AdminDashboard'
 import OrderCreationForm from '../../components/OrderCreationForm'
