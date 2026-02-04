@@ -1,12 +1,3 @@
-'use client'
-
-export default function RegisterPage() {
-  return (
-    <div style={{ padding: '2rem' }}>
-      <h2>Register page placeholder</h2>
-    </div>
-  )
-}
 import { fetchDashboardData, updateStatusAction } from '../actions'
 import AdminDashboard from '../../components/AdminDashboard'
 import OrderCreationForm from '../../components/OrderCreationForm'
@@ -16,7 +7,7 @@ import AuditLog from '../../components/AuditLog'
 
 export const dynamic = 'force-dynamic'
 
-export default async function Home() {
+export default async function RegisterPage() {
   const data = await fetchDashboardData()
 
   return (
@@ -32,9 +23,11 @@ export default async function Home() {
               Manage orders, track status, and view alerts
             </p>
           </div>
+
           <div className="flex flex-wrap items-center justify-end gap-3">
             <SystemWarnings warnings={data.warnings} />
             <AuditLog actions={data.actions} />
+
             <a
               href="/monitor"
               target="_blank"
@@ -42,6 +35,7 @@ export default async function Home() {
             >
               📺 Monitor
             </a>
+
             <a
               href="/kitchen"
               target="_blank"
@@ -49,6 +43,7 @@ export default async function Home() {
             >
               👨‍🍳 Chef
             </a>
+
             <a
               href="/expo"
               target="_blank"
@@ -56,6 +51,7 @@ export default async function Home() {
             >
               🔥 Expo
             </a>
+
             <span className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-800">
               <span className="mr-1.5 h-2 w-2 animate-pulse rounded-full bg-green-500"></span>
               System Online
@@ -63,21 +59,22 @@ export default async function Home() {
           </div>
         </header>
 
-        {/* Main Content Grid: Order Form & Dashboard */}
+        {/* Main Content Grid */}
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-          {/* Left Column: Create Order & Staff Scheduler */}
+          {/* Left Column */}
           <section className="space-y-8 lg:col-span-4">
             <OrderCreationForm />
             <StaffScheduler employees={data.employees} />
           </section>
 
-          {/* Right Column: Live Dashboard */}
+          {/* Right Column */}
           <section className="lg:col-span-8">
             <div className="mb-6 flex items-center justify-between">
               <h2 className="flex items-center gap-2 text-2xl font-bold text-indigo-900">
                 <span className="text-2xl">📊</span> Live Dashboard
               </h2>
             </div>
+
             <AdminDashboard
               orders={data.orders}
               updateStatusAction={updateStatusAction}
