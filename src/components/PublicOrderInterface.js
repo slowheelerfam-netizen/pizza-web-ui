@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createOrderAction } from '../app/actions'
+import { demoStorage } from '../lib/demoStorage'
 import { MENU_ITEMS } from '../types/models'
 import PizzaBuilderModal from './PizzaBuilderModal'
 
@@ -68,6 +69,38 @@ export default function PublicOrderInterface() {
     formData.append('totalPrice', cartTotal.toString())
 
     const result = await createOrderAction(null, formData)
+
+    // FALLBACK: If server action fails (e.g. Vercel with no DB), save to local storage
+    if (!result.success && !result.message?.includes('Validation')) {
+      console.log('Server action failed, saving to local storage (Demo Mode)')
+      demoStorage.saveOrder({
+        customerSnapshot: {
+          name: customerName,
+          phone: customerPhone,
+          type: orderType,
+          address,
+        },
+        items: cart,
+        totalPrice: cartTotal,
+      })
+
+      // Simulate success
+      setOrderResult({
+        success: true,
+        message: 'Order created (Local Storage)',
+      })
+      setIsSubmitting(false)
+
+      // Clear form
+      setCart([])
+      setCustomerName('')
+      setCustomerPhone('')
+      setAddress('')
+      setOrderType('PICKUP')
+      setIsCheckoutMode(false)
+      return
+    }
+
     setOrderResult(result)
     setIsSubmitting(false)
 

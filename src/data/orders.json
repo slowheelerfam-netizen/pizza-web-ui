@@ -584,5 +584,40 @@
       "address": null,
       "isWalkIn": false
     }
+  },
+  {
+    "id": "74c8a1a5-875e-43f5-aa08-07f51b279a1a",
+    "displayId": 1,
+    "status": "NEW",
+    "source": "CALL_IN",
+    "items": [
+      {
+        "id": 1770324918670,
+        "name": "Pepperoni",
+        "size": "Medium (12\")",
+        "crust": "Original Hand Tossed",
+        "toppings": [
+          "Pepperoni"
+        ],
+        "price": 12,
+        "notes": "",
+        "details": "Medium (12\") | Original Hand Tossed"
+      }
+    ],
+    "totalPrice": 12,
+    "createdAt": "2026-02-05T20:55:33.818Z",
+    "updatedAt": null,
+    "estimatedReadyAt": null,
+    "actualReadyAt": null,
+    "completedAt": null,
+    "isNoContact": false,
+    "customerSnapshot": {
+      "customerId": null,
+      "name": "bobbi",
+      "phone": "8056345746",
+      "type": "PICKUP",
+      "address": null,
+      "isWalkIn": false
+    }
   }
 ]
