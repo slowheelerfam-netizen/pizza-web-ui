@@ -7,18 +7,18 @@ import {
   getOrders,
   getWarnings,
   getActions,
+  getEmployees as getEmployeesService, // Assuming you have a service for this or will add it
+  employeeRepository // Or access the repository directly if service layer is thin
 } from '../lib/services'
 
-import { prisma } from '../lib/prisma'
+// import { prisma } from '../lib/prisma' // REMOVE PRISMA IMPORT
 
 // --------------------
 // Employee / Staff Management
 // --------------------
 export async function getEmployees() {
-  const employees = await prisma.employee.findMany({
-    orderBy: { name: 'asc' },
-  })
-  return employees
+  // Use service or repository instead of direct Prisma call
+  return await getEmployeesService() 
 }
 
 export async function addEmployeeAction(prevState, formData) {
@@ -30,12 +30,11 @@ export async function addEmployeeAction(prevState, formData) {
       return { success: false, message: 'Missing fields' }
     }
 
-    await prisma.employee.create({
-      data: {
+    // Use repository/service instead of Prisma
+    await employeeRepository.create({
         name,
         role,
         isOnDuty: false,
-      },
     })
 
     revalidatePath(ROUTES.HOME)
@@ -49,10 +48,13 @@ export async function addEmployeeAction(prevState, formData) {
 
 export async function toggleEmployeeDutyAction(id, isOnDuty) {
   try {
-    await prisma.employee.update({
-      where: { id },
-      data: { isOnDuty },
-    })
+    // Use repository/service instead of Prisma
+    const employee = await employeeRepository.findById(id)
+    if (employee) {
+        employee.isOnDuty = isOnDuty
+        await employeeRepository.update(employee)
+    }
+
     revalidatePath(ROUTES.HOME)
     revalidatePath('/kitchen')
     return { success: true }
@@ -63,9 +65,9 @@ export async function toggleEmployeeDutyAction(id, isOnDuty) {
 
 export async function deleteEmployeeAction(id) {
   try {
-    await prisma.employee.delete({
-      where: { id },
-    })
+    // Use repository/service instead of Prisma
+    await employeeRepository.delete(id)
+    
     revalidatePath(ROUTES.HOME)
     revalidatePath('/kitchen')
     return { success: true }
