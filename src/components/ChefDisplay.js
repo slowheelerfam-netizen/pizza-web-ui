@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { demoStorage } from '../lib/demoStorage'
 
 import { generateLabelText } from '../utils/receiptPrinter'
 
@@ -17,7 +18,18 @@ export default function ChefDisplay({
 
   // Sync with server props when they change (due to polling)
   useEffect(() => {
-    setOrders(initialOrders)
+    // Merge server orders with local storage orders
+    const localOrders = demoStorage.getOrders()
+    // Create a map by ID to merge
+    const orderMap = new Map()
+
+    // Add server orders first
+    initialOrders.forEach((o) => orderMap.set(o.id, o))
+
+    // Add/Overwrite with local orders (local takes precedence if updated more recently, but for simplicity just add/overwrite)
+    localOrders.forEach((o) => orderMap.set(o.id, o))
+
+    setOrders(Array.from(orderMap.values()))
   }, [initialOrders])
 
   // Poll for updates every 2 seconds
@@ -52,8 +64,14 @@ export default function ChefDisplay({
       }
     }
 
-    await updateStatusAction(orderId, newStatus, assignedTo)
-    router.refresh()
+    const result = await updateStatusAction(orderId, newStatus, assignedTo)
+
+    // Fallback: Update Local Storage if server action fails
+    if (result && !result.success) {
+      demoStorage.updateOrderStatus(orderId, newStatus, assignedTo)
+    } else {
+      router.refresh()
+    }
   }
 
   // 1. Split and Sort Orders

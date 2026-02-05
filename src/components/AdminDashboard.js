@@ -1,14 +1,18 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { demoStorage } from '../lib/demoStorage'
 import { ORDER_STATUS } from '../types/models'
 import { OVERRIDE_REASONS } from '../types/adminOverrideReasons'
 import OrderEditModal from './OrderEditModal'
 import React from 'react'
 
-export default function AdminDashboard({ orders }) {
+export default function AdminDashboard({ orders: initialOrders }) {
   const router = useRouter()
+  // Local state for merged orders
+  const [orders, setOrders] = useState(initialOrders)
+
   const [loading, setLoading] = useState(null)
   const [overrideOrder, setOverrideOrder] = useState(null)
   const [editingOrder, setEditingOrder] = useState(null)
@@ -45,6 +49,22 @@ export default function AdminDashboard({ orders }) {
     }, 2000)
     return () => clearInterval(interval)
   }, [router])
+
+  // Sync with server props + LocalStorage
+  useEffect(() => {
+    // Merge server orders with local storage orders
+    const localOrders = demoStorage.getOrders()
+    // Create a map by ID to merge
+    const orderMap = new Map()
+
+    // Add server orders first
+    initialOrders.forEach((o) => orderMap.set(o.id, o))
+
+    // Add/Overwrite with local orders
+    localOrders.forEach((o) => orderMap.set(o.id, o))
+
+    setOrders(Array.from(orderMap.values()))
+  }, [initialOrders])
 
   async function handleOverride(orderId, status, reason, comment) {
     setLoading(orderId)

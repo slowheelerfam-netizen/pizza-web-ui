@@ -2,13 +2,25 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { demoStorage } from '../lib/demoStorage'
 
 export default function MonitorDisplay({ initialOrders }) {
   const router = useRouter()
   const [orders, setOrders] = useState(initialOrders)
 
   useEffect(() => {
-    setOrders(initialOrders)
+    // Merge server orders with local storage orders
+    const localOrders = demoStorage.getOrders()
+    // Create a map by ID to merge
+    const orderMap = new Map()
+
+    // Add server orders first
+    initialOrders.forEach((o) => orderMap.set(o.id, o))
+
+    // Add/Overwrite with local orders
+    localOrders.forEach((o) => orderMap.set(o.id, o))
+
+    setOrders(Array.from(orderMap.values()))
   }, [initialOrders])
 
   useEffect(() => {
@@ -24,7 +36,7 @@ export default function MonitorDisplay({ initialOrders }) {
     .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
 
   return (
-    <div className="min-h-screen bg-slate-900 p-4 md:p-8 text-white">
+    <div className="min-h-screen bg-slate-900 p-4 text-white md:p-8">
       <header className="mb-8 flex items-center justify-between border-b border-slate-700 pb-6">
         <h1 className="text-4xl font-black tracking-tight">
           🔪 MONITOR: PREP STATION
@@ -34,34 +46,34 @@ export default function MonitorDisplay({ initialOrders }) {
         </div>
       </header>
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 items-start">
+      <div className="grid grid-cols-1 items-start gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {prepOrders.map((order) => (
           <div
             key={order.id}
             className="rounded-2xl border-2 border-slate-700 bg-slate-800 p-6 shadow-xl"
           >
             <div className="mb-6 flex items-center justify-between border-b-2 border-slate-700 pb-4">
-              <h3 className="truncate text-3xl font-extrabold text-white tracking-tight">
+              <h3 className="truncate text-3xl font-extrabold tracking-tight text-white">
                 {order.customerSnapshot.name}
               </h3>
-              <span className="rounded-lg bg-blue-900 px-3 py-1.5 text-sm font-black text-blue-200 uppercase tracking-wider">
+              <span className="rounded-lg bg-blue-900 px-3 py-1.5 text-sm font-black tracking-wider text-blue-200 uppercase">
                 PREP
               </span>
             </div>
-            
+
             <div className="space-y-6">
               {order.items.map((item, idx) => (
                 <div key={idx} className="text-lg">
                   <div className="flex items-start justify-between">
-                    <span className="font-bold text-slate-100 text-xl">
+                    <span className="text-xl font-bold text-slate-100">
                       {item.quantity || 1}x {item.name}
                     </span>
-                    <span className="whitespace-nowrap font-semibold text-slate-400">
+                    <span className="font-semibold whitespace-nowrap text-slate-400">
                       {item.size}
                     </span>
                   </div>
-                  
-                  <div className="pl-6 mt-1 text-base text-slate-300">
+
+                  <div className="mt-1 pl-6 text-base text-slate-300">
                     <div className="font-medium">{item.crust}</div>
                     {item.toppings && item.toppings.length > 0 && (
                       <div className="mt-1 leading-relaxed text-slate-400">
@@ -71,7 +83,7 @@ export default function MonitorDisplay({ initialOrders }) {
                   </div>
 
                   {item.notes && (
-                    <div className="mt-3 rounded-lg bg-amber-900/40 px-3 py-2 text-base font-bold text-amber-400 border border-amber-900/50">
+                    <div className="mt-3 rounded-lg border border-amber-900/50 bg-amber-900/40 px-3 py-2 text-base font-bold text-amber-400">
                       NOTE: {item.notes}
                     </div>
                   )}
@@ -79,19 +91,22 @@ export default function MonitorDisplay({ initialOrders }) {
               ))}
             </div>
 
-            <div className="mt-6 flex items-center justify-between border-t-2 border-slate-700 pt-4 text-sm text-slate-400 font-medium">
+            <div className="mt-6 flex items-center justify-between border-t-2 border-slate-700 pt-4 text-sm font-medium text-slate-400">
               <span className="font-mono text-base">
-                {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                {new Date(order.createdAt).toLocaleTimeString([], {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
               </span>
               {order.assignedTo && (
-                <span className="flex items-center gap-2 text-slate-300 bg-slate-700/50 px-3 py-1 rounded-full">
+                <span className="flex items-center gap-2 rounded-full bg-slate-700/50 px-3 py-1 text-slate-300">
                   👨‍🍳 {order.assignedTo}
                 </span>
               )}
             </div>
           </div>
         ))}
-        
+
         {prepOrders.length === 0 && (
           <div className="col-span-full py-20 text-center text-slate-500">
             No orders in Prep

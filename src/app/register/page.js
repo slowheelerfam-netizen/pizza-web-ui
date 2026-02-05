@@ -13,10 +13,10 @@ export default async function RegisterPage() {
 
   return (
     <main className="min-h-screen bg-gray-50/50 p-6 md:p-10">
-      <div className="mx-auto max-w-7xl space-y-8">
+      <div className="mx-auto max-w-[1600px] space-y-8">
         {/* Header Section */}
-        <header className="flex flex-col justify-between gap-4 border-b border-gray-200 pb-6 md:flex-row md:items-end">
-          <div>
+        <header className="flex flex-col items-center justify-between gap-6 border-b border-gray-200 pb-6 lg:flex-row">
+          <div className="text-center lg:text-left">
             <h1 className="text-4xl font-extrabold tracking-tight text-indigo-900">
               Pizza Kitchen
             </h1>
@@ -25,14 +25,11 @@ export default async function RegisterPage() {
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center justify-end gap-3">
-            <SystemWarnings warnings={data.warnings} />
-            <AuditLog actions={data.actions} />
-
+          <div className="flex flex-wrap justify-center gap-6 lg:relative lg:left-30">
             <Link
               href="/order"
               target="_blank"
-              className="inline-flex items-center gap-2 rounded-lg bg-pink-600 px-4 py-2 text-sm font-bold text-white shadow-md transition-all hover:bg-pink-700 hover:shadow-lg"
+              className="inline-flex items-center gap-2 rounded-lg bg-pink-600 px-5 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-pink-700 hover:shadow-lg"
             >
               🍕 Public Order
             </Link>
@@ -40,7 +37,7 @@ export default async function RegisterPage() {
             <Link
               href="/monitor"
               target="_blank"
-              className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-bold text-white shadow-md transition-all hover:bg-emerald-700 hover:shadow-lg"
+              className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-emerald-700 hover:shadow-lg"
             >
               📺 Monitor
             </Link>
@@ -48,7 +45,7 @@ export default async function RegisterPage() {
             <Link
               href="/kitchen"
               target="_blank"
-              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white shadow-md transition-all hover:bg-indigo-700 hover:shadow-lg"
+              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-indigo-700 hover:shadow-lg"
             >
               👨‍🍳 Chef
             </Link>
@@ -56,16 +53,14 @@ export default async function RegisterPage() {
             <Link
               href="/expo"
               target="_blank"
-              className="inline-flex items-center gap-2 rounded-lg bg-orange-600 px-4 py-2 text-sm font-bold text-white shadow-md transition-all hover:bg-orange-700 hover:shadow-lg"
+              className="inline-flex items-center gap-2 rounded-lg bg-orange-600 px-5 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-orange-700 hover:shadow-lg"
             >
               🔥 Expo
             </Link>
-
-            <span className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-800">
-              <span className="mr-1.5 h-2 w-2 animate-pulse rounded-full bg-green-500"></span>
-              System Online
-            </span>
           </div>
+
+          {/* Spacer to help center buttons if needed, or keep empty */}
+          <div className="hidden lg:block lg:w-48"></div>
         </header>
 
         {/* Main Content Grid */}
@@ -78,10 +73,19 @@ export default async function RegisterPage() {
 
           {/* Right Column */}
           <section className="lg:col-span-8">
-            <div className="mb-6 flex items-center justify-between">
+            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <h2 className="flex items-center gap-2 text-2xl font-bold text-indigo-900">
                 <span className="text-2xl">📊</span> Live Dashboard
               </h2>
+
+              <div className="flex items-center gap-3">
+                <SystemWarnings warnings={data.warnings} />
+                <AuditLog actions={data.actions} />
+                <span className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-800">
+                  <span className="mr-1.5 h-2 w-2 animate-pulse rounded-full bg-green-500"></span>
+                  System Online
+                </span>
+              </div>
             </div>
 
             <AdminDashboard

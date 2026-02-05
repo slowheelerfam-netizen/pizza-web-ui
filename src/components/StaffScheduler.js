@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { demoStorage } from '../lib/demoStorage'
 import {
   addEmployeeAction,
   toggleEmployeeDutyAction,
@@ -10,21 +11,31 @@ import {
 
 const ROLES = ['Front Counter', 'Chef', 'Cook', 'Float']
 
-export default function StaffScheduler({ employees }) {
+export default function StaffScheduler({ employees: initialEmployees }) {
   const router = useRouter()
+  // Local state to merge server and local employees
+  const [employees, setEmployees] = useState(initialEmployees)
+
   const [newEmployeeName, setNewEmployeeName] = useState('')
   const [selectedRole, setSelectedRole] = useState(ROLES[0])
   const [isAdding, setIsAdding] = useState(false)
   const [isPending, startTransition] = useTransition()
 
-  // Optimistic UI state
-  const [optimisticEmployees, setOptimisticEmployees] = useState(employees)
+  // Sync when prop updates + Load Local Storage
+  useEffect(() => {
+    // Merge server employees with local storage employees
+    const localEmployees = demoStorage.getEmployees()
+    // Create a map by ID to merge
+    const empMap = new Map()
 
-  // Sync when prop updates
-  if (JSON.stringify(employees) !== JSON.stringify(optimisticEmployees)) {
-    // This is a simplified sync, in a real app use useOptimistic hook
-    // For now, let's just rely on prop updates but we need to ensure the parent is re-rendering
-  }
+    // Add server employees first
+    initialEmployees.forEach((e) => empMap.set(e.id, e))
+
+    // Add/Overwrite with local employees
+    localEmployees.forEach((e) => empMap.set(e.id, e))
+
+    setEmployees(Array.from(empMap.values()))
+  }, [initialEmployees])
 
   async function handleAdd(e) {
     e.preventDefault()
@@ -35,7 +46,15 @@ export default function StaffScheduler({ employees }) {
     formData.append('name', newEmployeeName)
     formData.append('role', selectedRole)
 
-    await addEmployeeAction(null, formData)
+    const result = await addEmployeeAction(null, formData)
+
+    // Fallback: Save to Local Storage if server action fails
+    if (result && !result.success) {
+      demoStorage.addEmployee(newEmployeeName, selectedRole)
+      // Trigger a local state update by re-running the effect logic or router refresh
+      router.refresh()
+    }
+
     setNewEmployeeName('')
     setIsAdding(false)
   }
@@ -50,32 +69,34 @@ export default function StaffScheduler({ employees }) {
       </div>
 
       {/* Add New Staff */}
-      <form onSubmit={handleAdd} className="mb-6 flex gap-3">
+      <form onSubmit={handleAdd} className="mb-6 flex flex-col gap-3">
         <input
           type="text"
           placeholder="Employee Name"
           value={newEmployeeName}
           onChange={(e) => setNewEmployeeName(e.target.value)}
-          className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
         />
-        <select
-          value={selectedRole}
-          onChange={(e) => setSelectedRole(e.target.value)}
-          className="rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
-        >
-          {ROLES.map((role) => (
-            <option key={role} value={role}>
-              {role}
-            </option>
-          ))}
-        </select>
-        <button
-          type="submit"
-          disabled={!newEmployeeName.trim() || isAdding}
-          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700 disabled:opacity-50"
-        >
-          Add
-        </button>
+        <div className="flex gap-3">
+          <select
+            value={selectedRole}
+            onChange={(e) => setSelectedRole(e.target.value)}
+            className="flex-1 rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none"
+          >
+            {ROLES.map((role) => (
+              <option key={role} value={role}>
+                {role}
+              </option>
+            ))}
+          </select>
+          <button
+            type="submit"
+            disabled={!newEmployeeName.trim() || isAdding}
+            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-700 disabled:opacity-50"
+          >
+            Add
+          </button>
+        </div>
       </form>
 
       {/* Staff List */}
@@ -111,7 +132,24 @@ export default function StaffScheduler({ employees }) {
                     <div className="flex gap-2">
                       <button
                         onClick={async () => {
-                          await toggleEmployeeDutyAction(emp.id, !emp.isOnDuty)
+                          // Optimistic update
+                          const newStatus = !emp.isOnDuty
+                          setEmployees((prev) =>
+                            prev.map((e) =>
+                              e.id === emp.id
+                                ? { ...e, isOnDuty: newStatus }
+                                : e
+                            )
+                          )
+
+                          const result = await toggleEmployeeDutyAction(
+                            emp.id,
+                            newStatus
+                          )
+
+                          if (result && !result.success) {
+                            demoStorage.toggleEmployeeDuty(emp.id, newStatus)
+                          }
                           router.refresh()
                         }}
                         className={`rounded px-3 py-1 text-xs font-bold text-white transition-colors ${
@@ -124,7 +162,15 @@ export default function StaffScheduler({ employees }) {
                       </button>
                       <button
                         onClick={async () => {
-                          await deleteEmployeeAction(emp.id)
+                          // Optimistic
+                          setEmployees((prev) =>
+                            prev.filter((e) => e.id !== emp.id)
+                          )
+
+                          const result = await deleteEmployeeAction(emp.id)
+                          if (result && !result.success) {
+                            demoStorage.deleteEmployee(emp.id)
+                          }
                           router.refresh()
                         }}
                         className="flex h-6 w-6 items-center justify-center rounded text-gray-400 hover:bg-red-100 hover:text-red-500"
