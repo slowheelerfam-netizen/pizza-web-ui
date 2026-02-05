@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
-import DemoModeIndicator from '../components/DemoModeIndicator'
+import DemoModeIndicator from '@/components/DemoModeIndicator'
+import { DEMO_MODE } from '@/lib/appConfig'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -23,6 +24,7 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        {DEMO_MODE && <DemoModeIndicator />}
         {children}
       </body>
     </html>
