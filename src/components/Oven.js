@@ -2,14 +2,43 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { demoStorage } from '../lib/demoStorage'
 
-export default function ExpoDisplay({ initialOrders, updateStatusAction }) {
+export default function Oven({ initialOrders, updateStatusAction }) {
   const router = useRouter()
   const [orders, setOrders] = useState(initialOrders)
   const [selectedOrder, setSelectedOrder] = useState(null)
 
   useEffect(() => {
-    setOrders(initialOrders)
+    // Merge server orders with local storage orders
+    const localOrders = demoStorage.getOrders()
+    const orderMap = new Map()
+
+    // 1. Add server orders first
+    initialOrders.forEach((o) => orderMap.set(o.id, o))
+
+    // 2. Merge/Overwrite with local orders SMARTLY (Trust newer timestamp)
+    localOrders.forEach((localOrder) => {
+      const serverOrder = orderMap.get(localOrder.id)
+
+      if (!serverOrder) {
+        // If not on server, trust local (it might be a new offline order)
+        orderMap.set(localOrder.id, localOrder)
+      } else {
+        // If on both, compare updated timestamps
+        const serverTime = new Date(serverOrder.updatedAt || 0).getTime()
+        const localTime = new Date(localOrder.updatedAt || 0).getTime()
+
+        // Only overwrite if local is STRICTLY newer
+        if (localTime > serverTime) {
+          orderMap.set(localOrder.id, localOrder)
+        }
+      }
+    })
+
+    setTimeout(() => {
+      setOrders(Array.from(orderMap.values()))
+    }, 0)
   }, [initialOrders])
 
   useEffect(() => {
@@ -23,11 +52,18 @@ export default function ExpoDisplay({ initialOrders, updateStatusAction }) {
     // Optimistic
     setOrders((prev) => prev.filter((o) => o.id !== orderId))
     setSelectedOrder(null)
-    await updateStatusAction(orderId, 'READY')
-    router.refresh()
+
+    const result = await updateStatusAction(orderId, 'READY')
+
+    // ALWAYS update Local Storage
+    demoStorage.updateOrderStatus(orderId, 'READY')
+
+    if (!result || result.success) {
+      router.refresh()
+    }
   }
 
-  // CHUNK 2: Expo displays OVEN orders only
+  // CHUNK 2: Oven displays OVEN orders only
   const ovenOrders = orders
     .filter((o) => o.status === 'OVEN')
     .sort((a, b) =>
@@ -40,7 +76,7 @@ export default function ExpoDisplay({ initialOrders, updateStatusAction }) {
     <div className="min-h-screen bg-transparent p-8">
       <header className="mb-8 flex items-center justify-between border-b border-white/10 pb-6">
         <h1 className="text-4xl font-black tracking-tight text-white">
-          🔥 EXPO: OVEN STATION
+          🔥 OVEN STATION
         </h1>
         <div className="rounded-full bg-orange-100 px-4 py-2 font-mono text-xl text-orange-800">
           {ovenOrders.length} In Oven
@@ -82,57 +118,47 @@ export default function ExpoDisplay({ initialOrders, updateStatusAction }) {
                 </h2>
                 <div className="mt-2 flex items-center gap-4 text-gray-500">
                   <span className="font-bold text-orange-600">IN OVEN</span>
-                  <span>
-                    {new Date(selectedOrder.createdAt).toLocaleTimeString([], {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </span>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedOrder(null)}
-                className="rounded-full bg-gray-100 p-2 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
+                className="rounded-full bg-gray-100 p-2 text-gray-500 hover:bg-gray-200"
               >
                 ✕
               </button>
             </div>
 
-            <div className="mb-6 max-h-[50vh] space-y-4 overflow-y-auto">
-              {selectedOrder.items.map((item, idx) => (
-                <div
-                  key={idx}
-                  className="rounded-xl border border-gray-100 bg-gray-50 p-4"
-                >
-                  <h3 className="text-xl font-bold text-gray-900">
-                    {item.name}
-                  </h3>
-                  <p className="text-gray-600">
-                    {item.size} • {item.crust}
-                  </p>
-                  {item.toppings.length > 0 && (
-                    <p className="mt-2 text-gray-800">
-                      {item.toppings.join(', ')}
-                    </p>
-                  )}
-                  {item.notes && (
-                    <div className="mt-2 font-bold text-amber-600">
-                      NOTE: {item.notes}
-                    </div>
-                  )}
+            <div className="space-y-4">
+              <div className="rounded-xl bg-orange-50 p-4">
+                <h3 className="mb-2 text-sm font-bold tracking-wider text-orange-800 uppercase">
+                  Current Status
+                </h3>
+                <div className="flex items-center gap-3">
+                  <div className="h-3 w-3 animate-pulse rounded-full bg-orange-500"></div>
+                  <span className="text-lg font-medium text-orange-900">
+                    Cooking in Oven
+                  </span>
                 </div>
-              ))}
-            </div>
+              </div>
 
-            <button
-              onClick={() => handleMarkReady(selectedOrder.id)}
-              className="w-full rounded-xl bg-green-600 py-4 text-xl font-bold text-white shadow-lg transition-all hover:bg-green-500 active:scale-95"
-            >
-              MARK READY ✅
-            </button>
+              <div className="pt-4">
+                <button
+                  onClick={() => handleMarkReady(selectedOrder.id)}
+                  className="w-full rounded-xl bg-orange-600 py-4 text-xl font-bold text-white shadow-lg transition-all hover:bg-orange-700 hover:shadow-xl active:scale-95"
+                >
+                  Mark as READY
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
+
+      {/* DEBUG INFO */}
+      <div className="pointer-events-none fixed bottom-0 left-0 z-50 bg-black/80 p-2 text-xs text-white opacity-50">
+        Debug: Total {orders.length} | Oven {ovenOrders.length} | Statuses:{' '}
+        {orders.map((o) => o.status).join(', ')}
+      </div>
     </div>
   )
 }

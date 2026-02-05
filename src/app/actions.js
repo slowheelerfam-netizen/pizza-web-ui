@@ -161,6 +161,7 @@ export async function createOrderAction(prevState, formData) {
     const customerPhone = formData.get('customerPhone')
     const type = formData.get('type')
     const address = formData.get('address')
+    const isWalkIn = formData.get('isWalkIn') === 'true'
     const itemsJson = formData.get('items')
     const totalPrice = parseFloat(formData.get('totalPrice'))
 
@@ -175,6 +176,7 @@ export async function createOrderAction(prevState, formData) {
       customerPhone,
       type,
       address,
+      isWalkIn,
       source: 'CALL_IN',
       items,
       totalPrice,

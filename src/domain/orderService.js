@@ -42,13 +42,19 @@ export class OrderService {
         phone: customerPhone || null,
         type: type || 'PICKUP',
         address: address || null,
-        isWalkIn: !customerName,
+        isWalkIn: input.isWalkIn || !customerName,
       }
 
       // Calculate next display ID (1-50)
-      const lastOrder = await this.orders.findFirst({
-        orderBy: { createdAt: 'desc' },
-      })
+      const allOrders = await this.orders.getAll()
+      const lastOrder =
+        allOrders.length > 0
+          ? allOrders.reduce((latest, current) =>
+              new Date(current.createdAt) > new Date(latest.createdAt)
+                ? current
+                : latest
+            )
+          : null
 
       const nextDisplayId = lastOrder ? (lastOrder.displayId % 50) + 1 : 1
 

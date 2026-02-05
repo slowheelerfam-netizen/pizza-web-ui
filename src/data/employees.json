@@ -1,0 +1,20 @@
+[
+  {
+    "id": "emp-1",
+    "name": "Don",
+    "role": "MANAGER",
+    "isOnDuty": true
+  },
+  {
+    "id": "emp-2",
+    "name": "Chef Mario",
+    "role": "CHEF",
+    "isOnDuty": true
+  },
+  {
+    "id": "emp-3",
+    "name": "Driver Tom",
+    "role": "DRIVER",
+    "isOnDuty": false
+  }
+]

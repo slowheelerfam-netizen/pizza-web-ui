@@ -12,7 +12,7 @@ export default function AuditLog({ actions }) {
         className="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-sm font-medium text-indigo-800 transition-colors hover:bg-indigo-200"
       >
         <span className="mr-1.5 h-2 w-2 rounded-full bg-indigo-500"></span>
-        Audit Log
+        Show Logs
       </button>
 
       {isOpen && (
@@ -80,7 +80,7 @@ export default function AuditLog({ actions }) {
                           </span>
                           {a.comment && (
                             <div className="mt-1 rounded bg-gray-50 p-2 text-sm text-gray-600 italic">
-                              "{a.comment}"
+                              &quot;{a.comment}&quot;
                             </div>
                           )}
                           <span className="text-xs text-gray-400">

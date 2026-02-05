@@ -17,10 +17,25 @@ export default function MonitorDisplay({ initialOrders }) {
     // Add server orders first
     initialOrders.forEach((o) => orderMap.set(o.id, o))
 
-    // Add/Overwrite with local orders
-    localOrders.forEach((o) => orderMap.set(o.id, o))
+    // Merge/Overwrite with local orders SMARTLY (Trust newer timestamp)
+    localOrders.forEach((localOrder) => {
+      const serverOrder = orderMap.get(localOrder.id)
 
-    setOrders(Array.from(orderMap.values()))
+      if (!serverOrder) {
+        orderMap.set(localOrder.id, localOrder)
+      } else {
+        const serverTime = new Date(serverOrder.updatedAt || 0).getTime()
+        const localTime = new Date(localOrder.updatedAt || 0).getTime()
+
+        if (localTime > serverTime) {
+          orderMap.set(localOrder.id, localOrder)
+        }
+      }
+    })
+
+    setTimeout(() => {
+      setOrders(Array.from(orderMap.values()))
+    }, 0)
   }, [initialOrders])
 
   useEffect(() => {

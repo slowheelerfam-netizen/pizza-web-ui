@@ -60,14 +60,34 @@ export default function AdminDashboard({ orders: initialOrders }) {
     // Add server orders first
     initialOrders.forEach((o) => orderMap.set(o.id, o))
 
-    // Add/Overwrite with local orders
-    localOrders.forEach((o) => orderMap.set(o.id, o))
+    // Merge/Overwrite with local orders SMARTLY (Trust newer timestamp)
+    localOrders.forEach((localOrder) => {
+      const serverOrder = orderMap.get(localOrder.id)
 
-    setOrders(Array.from(orderMap.values()))
+      if (!serverOrder) {
+        orderMap.set(localOrder.id, localOrder)
+      } else {
+        const serverTime = new Date(serverOrder.updatedAt || 0).getTime()
+        const localTime = new Date(localOrder.updatedAt || 0).getTime()
+
+        if (localTime > serverTime) {
+          orderMap.set(localOrder.id, localOrder)
+        }
+      }
+    })
+
+    // Use setTimeout to avoid synchronous setState warning
+    setTimeout(() => {
+      setOrders(Array.from(orderMap.values()))
+    }, 0)
   }, [initialOrders])
 
   async function handleOverride(orderId, status, reason, comment) {
     setLoading(orderId)
+
+    // Find the order to ensure we save the full object to local storage
+    const orderToUpdate = orders.find((o) => o.id === orderId)
+
     await fetch('/api/admin/override', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -78,6 +98,29 @@ export default function AdminDashboard({ orders: initialOrders }) {
         comment,
       }),
     })
+
+    // ALWAYS update Local Storage (Force save to ensure persistence)
+    if (orderToUpdate) {
+      demoStorage.saveOrder({
+        ...orderToUpdate,
+        status: status,
+        updatedAt: new Date().toISOString(),
+      })
+    } else {
+      demoStorage.updateOrderStatus(orderId, status)
+    }
+
+    // Update local state immediately to reflect changes
+    setOrders((currentOrders) =>
+      currentOrders.map((o) =>
+        o.id === orderId
+          ? { ...o, status: status, updatedAt: new Date().toISOString() }
+          : o
+      )
+    )
+
+    router.refresh()
+
     setLoading(null)
     setOverrideOrder(null)
     setReason('')
@@ -105,9 +148,9 @@ export default function AdminDashboard({ orders: initialOrders }) {
     )
 
   // COLUMN 4: READY (Sort: Name - A to Z)
-  // Also including COMPLETED/CANCELLED for Admin visibility
+  // Only show READY orders in the 4th column
   const readyOrders = orders
-    .filter((o) => ['READY', 'COMPLETED', 'CANCELLED'].includes(o.status))
+    .filter((o) => o.status === 'READY')
     .sort((a, b) =>
       (a.customerSnapshot.name || '').localeCompare(
         b.customerSnapshot.name || ''
@@ -134,13 +177,19 @@ export default function AdminDashboard({ orders: initialOrders }) {
     } else if (order.status === 'READY') {
       statusColor = 'bg-green-500/20 text-green-200'
       statusLabel = 'READY'
+    } else if (order.status === 'COMPLETED') {
+      statusColor = 'bg-gray-500/20 text-gray-200'
+      statusLabel = 'DONE'
     }
 
     return (
       <div
         key={order.id}
-        onClick={() => setSelectedOrder(order)}
-        className={`mb-2 cursor-pointer rounded-xl border p-3 shadow-lg backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:shadow-xl ${
+        onClick={() => {
+          setSelectedOrder(order)
+          setComment('')
+        }}
+        className={`mb-1.5 cursor-pointer rounded-lg border p-2 shadow-lg backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:shadow-xl ${
           selectedOrder?.id === order.id
             ? 'border-indigo-500 bg-indigo-500/20 ring-1 ring-indigo-500/50'
             : 'border-white/10 bg-white/5 hover:bg-white/10'
@@ -212,9 +261,9 @@ export default function AdminDashboard({ orders: initialOrders }) {
                     <div>
                       <h3 className="font-bold text-gray-900">{item.name}</h3>
                       <p className="text-sm text-gray-600">
-                        {item.size} • {item.crust}
+                        {item.size || 'Standard'} • {item.crust || 'Regular'}
                       </p>
-                      {item.toppings.length > 0 && (
+                      {item.toppings && item.toppings.length > 0 && (
                         <p className="mt-1 text-sm text-gray-800">
                           {item.toppings.join(', ')}
                         </p>
@@ -225,25 +274,49 @@ export default function AdminDashboard({ orders: initialOrders }) {
               ))}
             </div>
 
-            <div className="mt-6 flex justify-end gap-2 border-t pt-4">
-              <button
-                onClick={() => {
-                  setSelectedOrder(null)
-                  setEditingOrder(selectedOrder)
-                }}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-50"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => {
-                  setSelectedOrder(null)
-                  setOverrideOrder(selectedOrder)
-                }}
-                className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-bold text-red-600 hover:bg-red-100"
-              >
-                Delete
-              </button>
+            <div className="mt-6 border-t pt-4">
+              {selectedOrder.status === 'READY' ? (
+                <div className="flex justify-end">
+                  <button
+                    onClick={async () => {
+                      await handleOverride(
+                        selectedOrder.id,
+                        'COMPLETED',
+                        'PICKUP',
+                        ''
+                      )
+                      setSelectedOrder(null)
+                    }}
+                    disabled={loading === selectedOrder.id}
+                    className="rounded-lg border border-green-200 bg-green-50 px-4 py-2 text-sm font-bold text-green-600 hover:bg-green-100 disabled:opacity-50"
+                  >
+                    {loading === selectedOrder.id
+                      ? 'Completing...'
+                      : 'Order Picked Up'}
+                  </button>
+                </div>
+              ) : (
+                <div className="flex justify-end gap-2">
+                  <button
+                    onClick={() => {
+                      setSelectedOrder(null)
+                      setEditingOrder(selectedOrder)
+                    }}
+                    className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-50"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSelectedOrder(null)
+                      setOverrideOrder(selectedOrder)
+                    }}
+                    className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-bold text-red-600 hover:bg-red-100"
+                  >
+                    Delete
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -338,17 +411,14 @@ export default function AdminDashboard({ orders: initialOrders }) {
         </div>
       )}
 
-      {/* ===== 4-COLUMN DYNAMIC LAYOUT ===== */}
-      <div className="flex flex-1 gap-4 overflow-hidden">
+      {/* ===== 4-COLUMN FIXED GRID LAYOUT ===== */}
+      <div className="grid min-h-0 flex-1 grid-cols-4 gap-2">
         {/* COLUMN 1: NEW */}
-        <div
-          className="flex flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-2xl backdrop-blur-xl transition-all duration-500"
-          style={{ flex: newFlex }}
-        >
-          <div className="border-b border-white/10 bg-white/5 px-6 py-4">
+        <div className="flex flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-2xl backdrop-blur-xl transition-all duration-500">
+          <div className="border-b border-white/10 bg-white/5 px-4 py-3">
             <h2 className="text-xl font-bold text-white">Incoming</h2>
           </div>
-          <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex-1 overflow-y-auto p-2">
             {newOrders.length === 0 ? (
               <div className="flex h-full flex-col items-center justify-center text-center opacity-50">
                 <div className="mb-2 text-4xl">🍕</div>
@@ -361,14 +431,11 @@ export default function AdminDashboard({ orders: initialOrders }) {
         </div>
 
         {/* COLUMN 2: PREP */}
-        <div
-          className="flex flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-2xl backdrop-blur-xl transition-all duration-500"
-          style={{ flex: prepFlex }}
-        >
-          <div className="border-b border-white/10 bg-white/5 px-6 py-4">
+        <div className="flex flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-2xl backdrop-blur-xl transition-all duration-500">
+          <div className="border-b border-white/10 bg-white/5 px-4 py-3">
             <h2 className="text-xl font-bold text-white">Prep</h2>
           </div>
-          <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex-1 overflow-y-auto p-2">
             {prepOrders.length === 0 ? (
               <div className="flex h-full flex-col items-center justify-center text-center opacity-50">
                 <div className="mb-2 text-4xl">👨‍🍳</div>
@@ -381,14 +448,11 @@ export default function AdminDashboard({ orders: initialOrders }) {
         </div>
 
         {/* COLUMN 3: OVEN */}
-        <div
-          className="flex flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-2xl backdrop-blur-xl transition-all duration-500"
-          style={{ flex: ovenFlex }}
-        >
-          <div className="border-b border-white/10 bg-white/5 px-6 py-4">
+        <div className="flex flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-2xl backdrop-blur-xl transition-all duration-500">
+          <div className="border-b border-white/10 bg-white/5 px-4 py-3">
             <h2 className="text-xl font-bold text-white">Oven</h2>
           </div>
-          <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex-1 overflow-y-auto p-2">
             {ovenOrders.length === 0 ? (
               <div className="flex h-full flex-col items-center justify-center text-center opacity-50">
                 <div className="mb-2 text-4xl">🔥</div>
@@ -401,20 +465,11 @@ export default function AdminDashboard({ orders: initialOrders }) {
         </div>
 
         {/* COLUMN 4: READY */}
-        <div
-          className="flex flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-2xl backdrop-blur-xl transition-all duration-500"
-          style={{ flex: readyFlex }}
-        >
-          <div className="flex items-center justify-between border-b border-white/10 bg-white/5 px-6 py-4">
-            <h2 className="text-xl font-bold text-white">Ready & Done</h2>
-            <button
-              onClick={() => setShowLogs(!showLogs)}
-              className="rounded-lg px-2 py-1 text-sm font-medium text-white/50 hover:bg-white/10 hover:text-white"
-            >
-              {showLogs ? 'Hide Logs' : 'Show Logs'}
-            </button>
+        <div className="flex flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-2xl backdrop-blur-xl transition-all duration-500">
+          <div className="flex items-center justify-between border-b border-white/10 bg-white/5 px-4 py-3">
+            <h2 className="text-xl font-bold text-white">Ready</h2>
           </div>
-          <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex-1 overflow-y-auto p-2">
             {readyOrders.length === 0 ? (
               <div className="flex h-full flex-col items-center justify-center text-center opacity-50">
                 <div className="mb-2 text-4xl">✅</div>
@@ -426,12 +481,6 @@ export default function AdminDashboard({ orders: initialOrders }) {
           </div>
         </div>
       </div>
-
-      {showLogs && (
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-center text-white/50">
-          System Logs & Warnings are currently hidden.
-        </div>
-      )}
     </div>
   )
 }

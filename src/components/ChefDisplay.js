@@ -16,22 +16,45 @@ export default function ChefDisplay({
   const [mergedEmployees, setMergedEmployees] = useState(employees)
   const [selectedOrder, setSelectedOrder] = useState(null)
   const [assignmentMap, setAssignmentMap] = useState({}) // Local state for assignments in modal
+  const [isAssignmentEnabled, setIsAssignmentEnabled] = useState(true)
 
   // Sync with server props when they change (due to polling)
   useEffect(() => {
     // Merge server orders with local storage orders
     const localOrders = demoStorage.getOrders()
     const orderMap = new Map()
-    initialOrders.forEach((o) => orderMap.set(o.id, o))
-    localOrders.forEach((o) => orderMap.set(o.id, o))
-    setOrders(Array.from(orderMap.values()))
 
+    // 1. Add server orders first
+    initialOrders.forEach((o) => orderMap.set(o.id, o))
+
+    // 2. Merge/Overwrite with local orders SMARTLY (Trust newer timestamp)
+    localOrders.forEach((localOrder) => {
+      const serverOrder = orderMap.get(localOrder.id)
+
+      if (!serverOrder) {
+        // If not on server, trust local
+        orderMap.set(localOrder.id, localOrder)
+      } else {
+        // If on both, compare updated timestamps
+        const serverTime = new Date(serverOrder.updatedAt || 0).getTime()
+        const localTime = new Date(localOrder.updatedAt || 0).getTime()
+
+        // Only overwrite if local is STRICTLY newer
+        if (localTime > serverTime) {
+          orderMap.set(localOrder.id, localOrder)
+        }
+      }
+    })
     // Merge server employees with local storage employees
     const localEmployees = demoStorage.getEmployees()
     const employeeMap = new Map()
     employees.forEach((e) => employeeMap.set(e.id, e))
     localEmployees.forEach((e) => employeeMap.set(e.id, e))
-    setMergedEmployees(Array.from(employeeMap.values()))
+
+    setTimeout(() => {
+      setOrders(Array.from(orderMap.values()))
+      setMergedEmployees(Array.from(employeeMap.values()))
+    }, 0)
   }, [initialOrders, employees])
 
   // Poll for updates every 2 seconds
@@ -68,10 +91,10 @@ export default function ChefDisplay({
 
     const result = await updateStatusAction(orderId, newStatus, assignedTo)
 
-    // Fallback: Update Local Storage if server action fails
-    if (result && !result.success) {
-      demoStorage.updateOrderStatus(orderId, newStatus, assignedTo)
-    } else {
+    // ALWAYS update Local Storage to keep it in sync as a mirror
+    demoStorage.updateOrderStatus(orderId, newStatus, assignedTo)
+
+    if (!result || result.success) {
       router.refresh()
     }
   }
@@ -105,12 +128,7 @@ export default function ChefDisplay({
       )
     )
 
-  // Dynamic Column Sizing
-  const newFlex = Math.max(1, newOrders.length)
-  const prepFlex = Math.max(1, prepOrders.length)
-  const ovenFlex = Math.max(1, ovenOrders.length)
-  const readyFlex = Math.max(1, readyOrders.length)
-
+  // Column Sizing (Fixed Grid)
   const availableStaff = mergedEmployees.filter((e) => Boolean(e.isOnDuty))
 
   // Helper to render an order card (Minimal: Name + Status)
@@ -146,105 +164,121 @@ export default function ChefDisplay({
             : 'border-gray-200 bg-white'
         }`}
       >
-        <div className="flex items-center justify-between">
-          <span className="truncate font-bold text-gray-900">
-            {order.customerSnapshot.name || 'Walk-in'}
-          </span>
-          <span
-            className={`rounded px-2 py-0.5 text-xs font-bold ${statusColor}`}
-          >
-            {statusLabel}
-          </span>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center justify-between">
+            <span className="truncate font-bold text-gray-900">
+              {order.customerSnapshot.name || 'Walk-in'}
+            </span>
+            <span
+              className={`rounded px-2 py-0.5 text-xs font-bold ${statusColor}`}
+            >
+              {statusLabel}
+            </span>
+          </div>
+          {order.customerSnapshot.isWalkIn && (
+            <span className="self-start rounded bg-purple-100 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-purple-700 uppercase">
+              Walk In
+            </span>
+          )}
         </div>
       </div>
     )
   }
 
   return (
-    <div className="flex h-[calc(100vh-64px)] gap-6 bg-transparent p-6 transition-all duration-500">
-      {/* COLUMN 1: NEW */}
-      <div
-        className="flex flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-2xl backdrop-blur-md transition-all duration-500"
-        style={{ flex: newFlex }}
-      >
-        <div className="border-b border-white/10 bg-white/5 p-4">
-          <h2 className="flex items-center gap-2 text-xl font-black text-white">
-            <span>🔔</span> NEW
-            <span className="rounded-full bg-blue-100 px-2 py-0.5 text-sm font-medium text-blue-800">
-              {newOrders.length}
-            </span>
-          </h2>
-        </div>
-        <div className="flex-1 overflow-y-auto p-4">
-          {newOrders.map(renderOrderCard)}
-          {newOrders.length === 0 && (
-            <div className="py-12 text-center text-gray-400">No new orders</div>
-          )}
-        </div>
+    <div className="flex h-[calc(100vh-64px)] flex-col p-6">
+      {/* Header Controls */}
+      <div className="mb-4 flex items-center justify-start">
+        <label className="flex cursor-pointer items-center gap-2 rounded-lg bg-white/10 px-4 py-2 text-sm font-bold text-white transition-all hover:bg-white/20">
+          <input
+            type="checkbox"
+            checked={isAssignmentEnabled}
+            onChange={(e) => setIsAssignmentEnabled(e.target.checked)}
+            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+          />
+          Enable Staff Assignment
+        </label>
       </div>
 
-      {/* COLUMN 2: PREP */}
-      <div
-        className="flex flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-2xl backdrop-blur-md transition-all duration-500"
-        style={{ flex: prepFlex }}
-      >
-        <div className="border-b border-white/10 bg-white/5 p-4">
-          <h2 className="flex items-center gap-2 text-xl font-black text-white">
-            <span>🔪</span> PREP
-            <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-sm font-medium text-indigo-800">
-              {prepOrders.length}
-            </span>
-          </h2>
+      <div className="grid min-h-0 flex-1 grid-cols-12 gap-6">
+        {/* COLUMN 1: NEW */}
+        <div className="col-span-3 flex flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-2xl backdrop-blur-md transition-all duration-500">
+          <div className="border-b border-white/10 bg-white/5 p-4">
+            <h2 className="flex items-center gap-2 text-xl font-black text-white">
+              <span>🔔</span> NEW
+              <span className="rounded-full bg-blue-100 px-2 py-0.5 text-sm font-medium text-blue-800">
+                {newOrders.length}
+              </span>
+            </h2>
+          </div>
+          <div className="flex-1 overflow-y-auto p-4">
+            {newOrders.map(renderOrderCard)}
+            {newOrders.length === 0 && (
+              <div className="py-12 text-center text-gray-400">
+                No new orders
+              </div>
+            )}
+          </div>
         </div>
-        <div className="flex-1 overflow-y-auto p-4">
-          {prepOrders.map(renderOrderCard)}
-          {prepOrders.length === 0 && (
-            <div className="py-12 text-center text-gray-400">Prep is clear</div>
-          )}
-        </div>
-      </div>
 
-      {/* COLUMN 3: OVEN */}
-      <div
-        className="flex flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-2xl backdrop-blur-md transition-all duration-500"
-        style={{ flex: ovenFlex }}
-      >
-        <div className="border-b border-white/10 bg-white/5 p-4">
-          <h2 className="flex items-center gap-2 text-xl font-black text-white">
-            <span>🔥</span> OVEN
-            <span className="rounded-full bg-orange-100 px-2 py-0.5 text-sm font-medium text-orange-800">
-              {ovenOrders.length}
-            </span>
-          </h2>
+        {/* COLUMN 2: PREP */}
+        <div className="col-span-3 flex flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-2xl backdrop-blur-md transition-all duration-500">
+          <div className="border-b border-white/10 bg-white/5 p-4">
+            <h2 className="flex items-center gap-2 text-xl font-black text-white">
+              <span>🔪</span> PREP
+              <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-sm font-medium text-indigo-800">
+                {prepOrders.length}
+              </span>
+            </h2>
+          </div>
+          <div className="flex-1 overflow-y-auto p-4">
+            {prepOrders.map(renderOrderCard)}
+            {prepOrders.length === 0 && (
+              <div className="py-12 text-center text-gray-400">
+                Prep is clear
+              </div>
+            )}
+          </div>
         </div>
-        <div className="flex-1 overflow-y-auto p-4">
-          {ovenOrders.map(renderOrderCard)}
-          {ovenOrders.length === 0 && (
-            <div className="py-12 text-center text-gray-400">Oven is empty</div>
-          )}
-        </div>
-      </div>
 
-      {/* COLUMN 4: READY */}
-      <div
-        className="flex flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-2xl backdrop-blur-md transition-all duration-500"
-        style={{ flex: readyFlex }}
-      >
-        <div className="border-b border-white/10 bg-white/5 p-4">
-          <h2 className="flex items-center gap-2 text-xl font-black text-white">
-            <span>✅</span> READY
-            <span className="rounded-full bg-green-100 px-2 py-0.5 text-sm font-medium text-green-800">
-              {readyOrders.length}
-            </span>
-          </h2>
+        {/* COLUMN 3: OVEN */}
+        <div className="col-span-3 flex flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-2xl backdrop-blur-md transition-all duration-500">
+          <div className="border-b border-white/10 bg-white/5 p-4">
+            <h2 className="flex items-center gap-2 text-xl font-black text-white">
+              <span>🔥</span> OVEN
+              <span className="rounded-full bg-orange-100 px-2 py-0.5 text-sm font-medium text-orange-800">
+                {ovenOrders.length}
+              </span>
+            </h2>
+          </div>
+          <div className="flex-1 overflow-y-auto p-4">
+            {ovenOrders.map(renderOrderCard)}
+            {ovenOrders.length === 0 && (
+              <div className="py-12 text-center text-gray-400">
+                Oven is empty
+              </div>
+            )}
+          </div>
         </div>
-        <div className="flex-1 overflow-y-auto p-4">
-          {readyOrders.map(renderOrderCard)}
-          {readyOrders.length === 0 && (
-            <div className="py-12 text-center text-gray-400">
-              No ready orders
-            </div>
-          )}
+
+        {/* COLUMN 4: READY */}
+        <div className="col-span-3 flex flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-2xl backdrop-blur-md transition-all duration-500">
+          <div className="border-b border-white/10 bg-white/5 p-4">
+            <h2 className="flex items-center gap-2 text-xl font-black text-white">
+              <span>✅</span> READY
+              <span className="rounded-full bg-green-100 px-2 py-0.5 text-sm font-medium text-green-800">
+                {readyOrders.length}
+              </span>
+            </h2>
+          </div>
+          <div className="flex-1 overflow-y-auto p-4">
+            {readyOrders.map(renderOrderCard)}
+            {readyOrders.length === 0 && (
+              <div className="py-12 text-center text-gray-400">
+                No ready orders
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -285,35 +319,36 @@ export default function ChefDisplay({
             </div>
 
             <div className="flex-1 overflow-y-auto p-6">
-              {/* Employee Assignment Selector (Only for NEW orders) */}
-              {['NEW', 'CONFIRMED'].includes(selectedOrder.status) && (
-                <div className="mb-6 rounded-lg bg-indigo-50 p-4">
-                  <label className="mb-2 block text-sm font-bold text-indigo-900">
-                    Assign Chef / Cook
-                  </label>
-                  <select
-                    value={assignmentMap[selectedOrder.id] || ''}
-                    onChange={(e) => {
-                      const newAssignee = e.target.value
-                      setAssignmentMap((prev) => ({
-                        ...prev,
-                        [selectedOrder.id]: newAssignee,
-                      }))
-                    }}
-                    className="w-full rounded-xl border-0 bg-gray-50 px-4 py-3 text-gray-900 shadow-inner ring-1 ring-gray-200 transition-all focus:bg-white focus:ring-2 focus:ring-indigo-500/30 focus:outline-none"
-                  >
-                    <option value="">-- Select Staff --</option>
-                    {availableStaff.length === 0 && (
-                      <option disabled>No staff currently on duty</option>
-                    )}
-                    {availableStaff.map((emp) => (
-                      <option key={emp.id} value={emp.name}>
-                        {emp.name} ({emp.role})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
+              {/* Employee Assignment Selector (Only for NEW orders AND if Enabled) */}
+              {['NEW', 'CONFIRMED'].includes(selectedOrder.status) &&
+                isAssignmentEnabled && (
+                  <div className="mb-6 rounded-lg bg-indigo-50 p-4">
+                    <label className="mb-2 block text-sm font-bold text-indigo-900">
+                      Assign Chef / Cook
+                    </label>
+                    <select
+                      value={assignmentMap[selectedOrder.id] || ''}
+                      onChange={(e) => {
+                        const newAssignee = e.target.value
+                        setAssignmentMap((prev) => ({
+                          ...prev,
+                          [selectedOrder.id]: newAssignee,
+                        }))
+                      }}
+                      className="w-full rounded-xl border-0 bg-gray-50 px-4 py-3 text-gray-900 shadow-inner ring-1 ring-gray-200 transition-all focus:bg-white focus:ring-2 focus:ring-indigo-500/30 focus:outline-none"
+                    >
+                      <option value="">-- Select Staff --</option>
+                      {availableStaff.length === 0 && (
+                        <option disabled>No staff currently on duty</option>
+                      )}
+                      {availableStaff.map((emp) => (
+                        <option key={emp.id} value={emp.name}>
+                          {emp.name} ({emp.role})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
               <div className="space-y-6">
                 {selectedOrder.items.map((item, idx) => (
@@ -327,16 +362,18 @@ export default function ChefDisplay({
                           {item.name}
                         </h3>
                         <p className="text-sm font-medium text-gray-600">
-                          {item.size} • {item.crust}
+                          {item.size || 'Standard'} • {item.crust || 'Regular'}
                         </p>
-                        <div className="mt-2">
-                          <span className="text-xs font-bold tracking-wide text-gray-500 uppercase">
-                            Toppings
-                          </span>
-                          <p className="text-lg text-gray-800">
-                            {item.toppings}
-                          </p>
-                        </div>
+                        {item.toppings && item.toppings.length > 0 && (
+                          <div className="mt-2">
+                            <span className="text-xs font-bold tracking-wide text-gray-500 uppercase">
+                              Toppings
+                            </span>
+                            <p className="text-lg text-gray-800">
+                              {item.toppings.join(', ')}
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </div>
                     {item.notes && (
@@ -354,16 +391,29 @@ export default function ChefDisplay({
               {(() => {
                 // NEW: Assign & Start Prep
                 if (['NEW', 'CONFIRMED'].includes(selectedOrder.status)) {
+                  const isAssignable =
+                    !isAssignmentEnabled || assignmentMap[selectedOrder.id]
                   return (
                     <button
-                      onClick={() =>
+                      onClick={() => {
+                        if (!isAssignable) {
+                          alert(
+                            'Please select a staff member to assign this order.'
+                          )
+                          return
+                        }
                         handleStatusUpdate(
                           selectedOrder.id,
                           'IN_PREP',
                           assignmentMap[selectedOrder.id]
                         )
-                      }
-                      className="w-full rounded-xl bg-indigo-600 py-4 text-xl font-bold text-white shadow-lg transition-all hover:bg-indigo-500 active:scale-95"
+                      }}
+                      disabled={!isAssignable}
+                      className={`w-full rounded-xl py-4 text-xl font-bold text-white shadow-lg transition-all active:scale-95 ${
+                        isAssignable
+                          ? 'bg-indigo-600 hover:bg-indigo-500'
+                          : 'cursor-not-allowed bg-gray-400'
+                      }`}
                     >
                       {assignmentMap[selectedOrder.id]
                         ? `ASSIGN TO ${assignmentMap[selectedOrder.id]} & START PREP`
@@ -394,7 +444,7 @@ export default function ChefDisplay({
                 return (
                   <div className="text-center font-medium text-gray-500">
                     {selectedOrder.status === 'OVEN'
-                      ? 'Order is in Oven. Waiting for Expo to mark Ready.'
+                      ? 'Order is in Oven. Waiting for Oven Station to mark Ready.'
                       : 'Order is Ready. No further actions.'}
                   </div>
                 )

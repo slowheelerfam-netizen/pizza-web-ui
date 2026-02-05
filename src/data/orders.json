@@ -1,7 +1,7 @@
 [
   {
     "id": "bab1007a-930c-4503-9738-be4385ea8ef6",
-    "status": "NEW",
+    "status": "COMPLETED",
     "source": "CALL_IN",
     "items": [
       {
@@ -12,17 +12,19 @@
     ],
     "totalPrice": 12,
     "createdAt": "2026-02-02T16:02:47.316Z",
-    "updatedAt": null,
+    "updatedAt": "2026-02-05T19:34:22.024Z",
     "estimatedReadyAt": null,
     "actualReadyAt": null,
-    "completedAt": null,
+    "completedAt": "2026-02-05T19:34:22.024Z",
     "isNoContact": false,
     "customerSnapshot": {
       "customerId": null,
       "name": "dru",
       "phone": "8767656543",
       "isWalkIn": false
-    }
+    },
+    "assignedTo": "David",
+    "ovenEnteredAt": "2026-02-05T19:18:46.492Z"
   },
   {
     "id": "be195367-ed6e-49da-af6d-33347e6fb711",
@@ -94,7 +96,7 @@
   },
   {
     "id": "ef0734eb-3945-4517-9813-b952d166d50d",
-    "status": "NEW",
+    "status": "COMPLETED",
     "source": "CALL_IN",
     "items": [
       {
@@ -115,17 +117,19 @@
     ],
     "totalPrice": 33,
     "createdAt": "2026-02-02T16:03:19.932Z",
-    "updatedAt": null,
+    "updatedAt": "2026-02-05T19:36:29.552Z",
     "estimatedReadyAt": null,
     "actualReadyAt": null,
-    "completedAt": null,
+    "completedAt": "2026-02-05T19:36:29.552Z",
     "isNoContact": false,
     "customerSnapshot": {
       "customerId": null,
       "name": "how",
       "phone": "8765768576",
       "isWalkIn": false
-    }
+    },
+    "assignedTo": "David",
+    "ovenEnteredAt": "2026-02-05T18:10:17.960Z"
   },
   {
     "id": "70941878-03aa-4547-b130-b3c6e5ae4c3a",
@@ -159,7 +163,7 @@
   },
   {
     "id": "8dabd0a2-21b2-40c7-b693-af63d9db975c",
-    "status": "NEW",
+    "status": "OVEN",
     "source": "CALL_IN",
     "items": [
       {
@@ -185,7 +189,7 @@
     ],
     "totalPrice": 47,
     "createdAt": "2026-02-02T16:03:43.389Z",
-    "updatedAt": null,
+    "updatedAt": "2026-02-05T19:38:30.726Z",
     "estimatedReadyAt": null,
     "actualReadyAt": null,
     "completedAt": null,
@@ -195,7 +199,9 @@
       "name": "bob",
       "phone": "987987987987",
       "isWalkIn": false
-    }
+    },
+    "assignedTo": "David",
+    "ovenEnteredAt": "2026-02-05T19:38:30.726Z"
   },
   {
     "id": "c222cae8-a678-4e83-b81c-16fc3769d42b",
@@ -314,7 +320,7 @@
   },
   {
     "id": "57be7376-952e-41ae-99c1-e1dec2271dbd",
-    "status": "NEW",
+    "status": "IN_PREP",
     "source": "CALL_IN",
     "items": [
       {
@@ -330,7 +336,7 @@
     ],
     "totalPrice": 22,
     "createdAt": "2026-02-02T18:48:13.976Z",
-    "updatedAt": null,
+    "updatedAt": "2026-02-05T19:18:39.375Z",
     "estimatedReadyAt": null,
     "actualReadyAt": null,
     "completedAt": null,
@@ -340,7 +346,8 @@
       "name": "Yukon Gold",
       "phone": "7123234234",
       "isWalkIn": false
-    }
+    },
+    "assignedTo": "David"
   },
   {
     "id": "5189047e-d7ec-4245-b6a3-7288c7d3ed55",
@@ -540,6 +547,41 @@
       "phone": "(805) 3469932",
       "type": "PICKUP",
       "address": "",
+      "isWalkIn": false
+    }
+  },
+  {
+    "id": "d7580bb0-e085-4d16-86dd-ed6cd45219be",
+    "displayId": null,
+    "status": "NEW",
+    "source": "CALL_IN",
+    "items": [
+      {
+        "id": 1770318871958,
+        "name": "Pepperoni",
+        "size": "Medium (12\")",
+        "crust": "Original Hand Tossed",
+        "toppings": [
+          "Pepperoni"
+        ],
+        "price": 12,
+        "notes": "",
+        "details": "Medium (12\") | Original Hand Tossed"
+      }
+    ],
+    "totalPrice": 12,
+    "createdAt": "2026-02-05T19:14:53.295Z",
+    "updatedAt": null,
+    "estimatedReadyAt": null,
+    "actualReadyAt": null,
+    "completedAt": null,
+    "isNoContact": false,
+    "customerSnapshot": {
+      "customerId": null,
+      "name": "Bob",
+      "phone": "812 4325847",
+      "type": "PICKUP",
+      "address": null,
       "isWalkIn": false
     }
   }

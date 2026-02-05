@@ -40,6 +40,9 @@ export const MENU_ITEMS = [
     basePrice: 10,
     description: 'Classic tomato sauce and mozzarella',
     defaultToppings: [],
+    ingredients: ['Tomato Sauce', 'Mozzarella', 'Fresh Basil'],
+    image:
+      'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?q=80&w=800&auto=format&fit=crop',
   },
   {
     id: 'm2',
@@ -47,6 +50,9 @@ export const MENU_ITEMS = [
     basePrice: 12,
     description: 'A classic favorite with generous pepperoni',
     defaultToppings: ['pep'],
+    ingredients: ['Tomato Sauce', 'Mozzarella', 'Pepperoni'],
+    image:
+      'https://images.unsplash.com/photo-1628840042765-356cda07504e?q=80&w=800&auto=format&fit=crop',
   },
   {
     id: 'm3',
@@ -54,6 +60,16 @@ export const MENU_ITEMS = [
     basePrice: 14,
     description: 'Loaded with fresh vegetables',
     defaultToppings: ['mush', 'onions', 'peppers', 'olives'],
+    ingredients: [
+      'Tomato Sauce',
+      'Mozzarella',
+      'Mushrooms',
+      'Onions',
+      'Peppers',
+      'Olives',
+    ],
+    image:
+      'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?q=80&w=800&auto=format&fit=crop',
   },
   {
     id: 'm4',
@@ -61,5 +77,14 @@ export const MENU_ITEMS = [
     basePrice: 16,
     description: 'Pepperoni, sausage, and bacon',
     defaultToppings: ['pep', 'sausage', 'bacon'],
+    ingredients: [
+      'Tomato Sauce',
+      'Mozzarella',
+      'Pepperoni',
+      'Sausage',
+      'Bacon',
+    ],
+    image:
+      'https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=800&auto=format&fit=crop',
   },
 ]

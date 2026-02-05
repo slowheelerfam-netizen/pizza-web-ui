@@ -1,1 +1,52 @@
-[]
+[
+  {
+    "id": "7af5c23f-3dfd-4b20-8520-463e80ac3ea3",
+    "orderId": "ef0734eb-3945-4517-9813-b952d166d50d",
+    "customerName": "how",
+    "phone": "8765768576",
+    "type": "SMS",
+    "status": "SENT",
+    "message": "Hello how, your pizza will be ready in approximately 10 minutes.",
+    "sentAt": "2026-02-05T18:10:17.964Z"
+  },
+  {
+    "id": "b5e20b4f-1734-43ef-86b0-ac37e5bbc1c3",
+    "orderId": "ef0734eb-3945-4517-9813-b952d166d50d",
+    "customerName": "how",
+    "phone": "8765768576",
+    "type": "SMS",
+    "status": "SENT",
+    "message": "Hello how, your order is READY!",
+    "sentAt": "2026-02-05T18:10:41.096Z"
+  },
+  {
+    "id": "aea40efb-dcb2-46e0-9fc0-c33f8f0d45a9",
+    "orderId": "bab1007a-930c-4503-9738-be4385ea8ef6",
+    "customerName": "dru",
+    "phone": "8767656543",
+    "type": "SMS",
+    "status": "SENT",
+    "message": "Hello dru, your pizza will be ready in approximately 10 minutes.",
+    "sentAt": "2026-02-05T19:18:46.495Z"
+  },
+  {
+    "id": "ceaa90a7-eec9-4e35-84d7-c34719a05060",
+    "orderId": "bab1007a-930c-4503-9738-be4385ea8ef6",
+    "customerName": "dru",
+    "phone": "8767656543",
+    "type": "SMS",
+    "status": "SENT",
+    "message": "Hello dru, your order is READY!",
+    "sentAt": "2026-02-05T19:18:56.617Z"
+  },
+  {
+    "id": "224c2832-7292-4a67-817e-f24036ff6a55",
+    "orderId": "8dabd0a2-21b2-40c7-b693-af63d9db975c",
+    "customerName": "bob",
+    "phone": "987987987987",
+    "type": "SMS",
+    "status": "SENT",
+    "message": "Hello bob, your pizza will be ready in approximately 10 minutes.",
+    "sentAt": "2026-02-05T19:38:30.730Z"
+  }
+]

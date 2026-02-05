@@ -4,7 +4,15 @@ import { useState, useEffect } from 'react'
 import { updateOrderDetailsAction } from '../app/actions'
 import { MENU_ITEMS, PIZZA_SIZES, CRUST_TYPES, TOPPINGS } from '../types/models'
 
-export default function OrderEditModal({ order, isOpen, onClose }) {
+const generateId = () => Date.now()
+
+export default function OrderEditModal({
+  order,
+  isOpen,
+  onClose,
+  onSave,
+  onDelete,
+}) {
   // Cart state
   const [items, setItems] = useState([])
 
@@ -33,12 +41,14 @@ export default function OrderEditModal({ order, isOpen, onClose }) {
   // Initialize state from order prop
   useEffect(() => {
     if (order && isOpen) {
-      setItems(order.items || [])
-      setCustomerName(order.customerSnapshot?.name || '')
-      setCustomerPhone(order.customerSnapshot?.phone || '')
-      setOrderType(order.customerSnapshot?.type || 'PICKUP')
-      setAddress(order.customerSnapshot?.address || '')
-      setError(null)
+      setTimeout(() => {
+        setItems(order.items || [])
+        setCustomerName(order.customerSnapshot?.name || '')
+        setCustomerPhone(order.customerSnapshot?.phone || '')
+        setOrderType(order.customerSnapshot?.type || 'PICKUP')
+        setAddress(order.customerSnapshot?.address || '')
+        setError(null)
+      }, 0)
     }
   }, [order, isOpen])
 
@@ -102,7 +112,7 @@ export default function OrderEditModal({ order, isOpen, onClose }) {
 
   const addItemToOrder = () => {
     const item = {
-      id: Date.now(),
+      id: generateId(),
       name: selectedPizza.name,
       size: selectedSize.label,
       crust: selectedCrust.label,

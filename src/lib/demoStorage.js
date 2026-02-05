@@ -2,7 +2,7 @@
 const KEYS = {
   ORDERS: 'pizza-system-orders',
   EMPLOYEES: 'pizza-system-employees',
-  ACTIONS: 'pizza-system-actions'
+  ACTIONS: 'pizza-system-actions',
 }
 
 // Check if we are in a browser environment
@@ -14,7 +14,8 @@ export const demoStorage = {
     if (!isBrowser) return []
     try {
       const stored = localStorage.getItem(KEYS.ORDERS)
-      return stored ? JSON.parse(stored) : []
+      const parsed = stored ? JSON.parse(stored) : []
+      return Array.isArray(parsed) ? parsed : []
     } catch (e) {
       console.error('Failed to load orders from localStorage', e)
       return []
@@ -25,8 +26,8 @@ export const demoStorage = {
     if (!isBrowser) return
     const orders = demoStorage.getOrders()
     // If update, replace; if new, add
-    const existingIndex = orders.findIndex(o => o.id === order.id)
-    
+    const existingIndex = orders.findIndex((o) => o.id === order.id)
+
     // Add missing fields if this is a raw form object
     const completeOrder = {
       ...order,
@@ -36,7 +37,7 @@ export const demoStorage = {
       updatedAt: new Date().toISOString(),
       items: order.items || [],
       customerSnapshot: order.customerSnapshot || {},
-      totalPrice: order.totalPrice || 0
+      totalPrice: order.totalPrice || 0,
     }
 
     if (existingIndex >= 0) {
@@ -44,14 +45,14 @@ export const demoStorage = {
     } else {
       orders.push(completeOrder)
     }
-    
+
     localStorage.setItem(KEYS.ORDERS, JSON.stringify(orders))
-    
+
     // Log action
     demoStorage.logAction({
       actionType: existingIndex >= 0 ? 'UPDATE_ORDER' : 'CREATE_ORDER',
       entityId: completeOrder.id,
-      details: `Order ${existingIndex >= 0 ? 'updated' : 'created'} in demo mode`
+      details: `Order ${existingIndex >= 0 ? 'updated' : 'created'} in demo mode`,
     })
 
     return completeOrder
@@ -60,22 +61,22 @@ export const demoStorage = {
   updateOrderStatus: (orderId, status, assignedTo = null) => {
     if (!isBrowser) return
     const orders = demoStorage.getOrders()
-    const orderIndex = orders.findIndex(o => o.id === orderId)
-    
+    const orderIndex = orders.findIndex((o) => o.id === orderId)
+
     if (orderIndex >= 0) {
       orders[orderIndex].status = status
       orders[orderIndex].updatedAt = new Date().toISOString()
-      
+
       if (assignedTo) {
         orders[orderIndex].assignedTo = assignedTo
       }
-      
+
       localStorage.setItem(KEYS.ORDERS, JSON.stringify(orders))
-      
+
       demoStorage.logAction({
         actionType: 'STATUS_CHANGE',
         entityId: orderId,
-        details: `Status changed to ${status} (Assigned: ${assignedTo || 'None'})`
+        details: `Status changed to ${status} (Assigned: ${assignedTo || 'None'})`,
       })
     }
   },
@@ -85,7 +86,8 @@ export const demoStorage = {
     if (!isBrowser) return []
     try {
       const stored = localStorage.getItem(KEYS.EMPLOYEES)
-      return stored ? JSON.parse(stored) : []
+      const parsed = stored ? JSON.parse(stored) : []
+      return Array.isArray(parsed) ? parsed : []
     } catch (e) {
       return []
     }
@@ -98,7 +100,7 @@ export const demoStorage = {
       id: `emp-${Date.now()}`,
       name,
       role,
-      isOnDuty: false
+      isOnDuty: false,
     }
     employees.push(newEmp)
     localStorage.setItem(KEYS.EMPLOYEES, JSON.stringify(employees))
@@ -108,16 +110,16 @@ export const demoStorage = {
   toggleEmployeeDuty: (id, isOnDuty) => {
     if (!isBrowser) return
     const employees = demoStorage.getEmployees()
-    const emp = employees.find(e => e.id === id)
+    const emp = employees.find((e) => e.id === id)
     if (emp) {
       emp.isOnDuty = isOnDuty
       localStorage.setItem(KEYS.EMPLOYEES, JSON.stringify(employees))
     }
   },
-  
+
   deleteEmployee: (id) => {
     if (!isBrowser) return
-    const employees = demoStorage.getEmployees().filter(e => e.id !== id)
+    const employees = demoStorage.getEmployees().filter((e) => e.id !== id)
     localStorage.setItem(KEYS.EMPLOYEES, JSON.stringify(employees))
   },
 
@@ -138,10 +140,10 @@ export const demoStorage = {
     const newAction = {
       id: `act-${Date.now()}`,
       timestamp: new Date().toISOString(),
-      ...action
+      ...action,
     }
     // Keep last 50 actions
     const updatedActions = [...actions, newAction].slice(-50)
     localStorage.setItem(KEYS.ACTIONS, JSON.stringify(updatedActions))
-  }
+  },
 }
