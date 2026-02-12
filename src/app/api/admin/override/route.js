@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
-import { createServerServices } from '@/server/services'
+import { createServerServices } from '@/server'
 
-export const runtime = 'nodejs' // REQUIRED — Edge runtime breaks file-based repos
+export const runtime = 'nodejs'
 
 export async function POST(req) {
   let payload
@@ -15,15 +15,20 @@ export async function POST(req) {
     )
   }
 
-  const { orderId, status, reason, comment, explicitOverride } = payload
-  const { orderService } = createServerServices()
+  const {
+    orderId,
+    status,
+    reason,
+    comment,
+    assignedTo,
+    explicitOverride,
+  } = payload
 
-  // 🚨 HARD GUARD: override must be explicit
   if (explicitOverride !== true) {
     return NextResponse.json(
       {
         success: false,
-        message: 'Admin override requires explicitOverride=true'
+        message: 'Admin override requires explicitOverride=true',
       },
       { status: 400 }
     )
@@ -36,8 +41,11 @@ export async function POST(req) {
     )
   }
 
+  const { orderService } = createServerServices()
+
   try {
-    await orderService.adminOverrideStatus(
+    // Single atomic transition + audit log
+    const result = await orderService.adminOverrideStatus(
       'admin-api',
       orderId,
       status,
@@ -45,7 +53,12 @@ export async function POST(req) {
       comment || null
     )
 
-    return NextResponse.json({ success: true })
+    // Assignment is a mutation, apply once after status is valid
+    if (assignedTo) {
+      await orderService.updateOrderDetails(orderId, { assignedTo })
+    }
+
+    return NextResponse.json({ success: true, order: result.order })
   } catch (error) {
     console.error('[ADMIN_OVERRIDE_FAILED]', error)
     return NextResponse.json(

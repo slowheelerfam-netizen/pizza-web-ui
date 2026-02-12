@@ -1,12 +1,1 @@
-[
-  {
-    "id": "warn-seed-001",
-    "reason": "Known prank caller history",
-    "createdBy": "sys-admin",
-    "customerIdentifier": {
-      "phone": "555-0199"
-    },
-    "isActive": true,
-    "createdAt": "2023-10-27T10:00:00.000Z"
-  }
-]
+[]

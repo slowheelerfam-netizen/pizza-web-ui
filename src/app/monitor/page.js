@@ -7,9 +7,10 @@ export default async function MonitorPage() {
   const data = await fetchDashboardData()
 
   // Filter for active orders to show on monitor
-  // Monitor only shows MONITOR orders (Chunk 2)
-  const activeOrders = data.orders.filter((order) =>
-    ['MONITOR'].includes(order.status)
+  // Monitor now shows MONITOR (Prep) and OVEN orders
+  const safeOrders = Array.isArray(data.orders) ? data.orders : []
+  const activeOrders = safeOrders.filter((order) =>
+    ['MONITOR', 'OVEN'].includes(order.status)
   )
 
   return (

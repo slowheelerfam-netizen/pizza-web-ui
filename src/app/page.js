@@ -1,12 +1,19 @@
+export const dynamic = 'force-dynamic'
+
 import Link from 'next/link'
 import PublicOrderInterface from '../components/PublicOrderInterface'
+import { createOrderAction, updateStatusAction, fetchDashboardData } from './actions'
 
 export const metadata = {
   title: "Order Pizza | Don's Pizza Shop",
   description: 'Order the best pizza in town online.',
 }
 
-export default function Home() {
+export default async function Home() {
+  const data = await fetchDashboardData()
+  const orders = data?.orders || []
+  const employees = data?.employees || []
+
   return (
     <main className="relative min-h-screen">
       {/* Background Image */}
@@ -57,7 +64,12 @@ export default function Home() {
           <h1 className="relative z-50 mb-8 text-center text-4xl font-extrabold text-white drop-shadow-lg">
             Future Website interface
           </h1>
-          <PublicOrderInterface />
+          <PublicOrderInterface 
+            initialOrders={orders}
+            employees={employees}
+            createOrderAction={createOrderAction}
+            updateStatusAction={updateStatusAction}
+          />
         </div>
       </div>
     </main>

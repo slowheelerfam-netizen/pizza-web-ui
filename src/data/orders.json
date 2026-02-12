@@ -1,71 +1,13 @@
 [
   {
-    "id": "bab1007a-930c-4503-9738-be4385ea8ef6",
-    "status": "COMPLETED",
-    "source": "CALL_IN",
-    "items": [
-      {
-        "name": "Pepperoni",
-        "price": 12,
-        "id": 1770048166486
-      }
-    ],
-    "totalPrice": 12,
-    "createdAt": "2026-02-02T16:02:47.316Z",
-    "updatedAt": "2026-02-05T19:34:22.024Z",
-    "estimatedReadyAt": null,
-    "actualReadyAt": null,
-    "completedAt": "2026-02-05T19:34:22.024Z",
-    "isNoContact": false,
-    "customerSnapshot": {
-      "customerId": null,
-      "name": "dru",
-      "phone": "8767656543",
-      "isWalkIn": false
-    },
-    "assignedTo": "David",
-    "ovenEnteredAt": "2026-02-05T19:18:46.492Z"
-  },
-  {
-    "id": "be195367-ed6e-49da-af6d-33347e6fb711",
+    "id": "806a5bc8-e379-4245-b0a3-b64c7b012dd7",
+    "displayId": 1,
     "status": "NEW",
-    "source": "CALL_IN",
+    "assumeChefRole": true,
+    "source": "REGISTER",
     "items": [
       {
-        "name": "Margherita",
-        "price": 10,
-        "id": 1770048175905
-      }
-    ],
-    "totalPrice": 10,
-    "createdAt": "2026-02-09T17:02:46.049Z",
-    "updatedAt": "2026-02-10T17:02:46.082Z",
-    "estimatedReadyAt": null,
-    "actualReadyAt": null,
-    "completedAt": null,
-    "isNoContact": false,
-    "customerSnapshot": {
-      "customerId": null,
-      "name": "ric",
-      "phone": "98798798",
-      "isWalkIn": false,
-      "type": "PICKUP",
-      "address": ""
-    },
-    "isPriority": true
-  },
-  {
-    "id": "94217971-c267-4096-8330-68cc7c8624bb",
-    "status": "NEW",
-    "source": "CALL_IN",
-    "items": [
-      {
-        "name": "Margherita",
-        "price": 10,
-        "id": 1770048186908
-      },
-      {
-        "id": 1770080621707,
+        "id": 1770847508197,
         "name": "Meat Lovers",
         "size": "Medium (12\")",
         "crust": "Original Hand Tossed",
@@ -79,376 +21,31 @@
         "details": "Medium (12\") | Original Hand Tossed"
       }
     ],
-    "totalPrice": 26,
-    "createdAt": "2026-02-09T17:04:06.761Z",
-    "updatedAt": "2026-02-10T17:04:06.802Z",
+    "totalPrice": 16,
+    "isPriority": false,
+    "createdAt": "2026-02-11T22:05:10.957Z",
+    "updatedAt": null,
     "estimatedReadyAt": null,
     "actualReadyAt": null,
-    "completedAt": null,
-    "isNoContact": false,
     "customerSnapshot": {
       "customerId": null,
-      "name": "tod",
-      "phone": "98732463",
-      "isWalkIn": false,
-      "type": "PICKUP",
-      "address": ""
-    },
-    "isPriority": true
-  },
-  {
-    "id": "ef0734eb-3945-4517-9813-b952d166d50d",
-    "status": "COMPLETED",
-    "source": "CALL_IN",
-    "items": [
-      {
-        "name": "Pepperoni",
-        "price": 12,
-        "id": 1770048197578
-      },
-      {
-        "name": "Margherita",
-        "price": 10,
-        "id": 1770048198046
-      },
-      {
-        "name": "Veggie",
-        "price": 11,
-        "id": 1770048198796
-      }
-    ],
-    "totalPrice": 33,
-    "createdAt": "2026-02-02T16:03:19.932Z",
-    "updatedAt": "2026-02-05T19:36:29.552Z",
-    "estimatedReadyAt": null,
-    "actualReadyAt": null,
-    "completedAt": "2026-02-05T19:36:29.552Z",
-    "isNoContact": false,
-    "customerSnapshot": {
-      "customerId": null,
-      "name": "how",
-      "phone": "8765768576",
-      "isWalkIn": false
-    },
-    "assignedTo": "David",
-    "ovenEnteredAt": "2026-02-05T18:10:17.960Z"
-  },
-  {
-    "id": "70941878-03aa-4547-b130-b3c6e5ae4c3a",
-    "status": "NEW",
-    "source": "CALL_IN",
-    "items": [
-      {
-        "name": "Veggie",
-        "price": 11,
-        "id": 1770048211350
-      },
-      {
-        "name": "Margherita",
-        "price": 10,
-        "id": 1770048211984
-      }
-    ],
-    "totalPrice": 21,
-    "createdAt": "2026-02-09T17:05:28.973Z",
-    "updatedAt": "2026-02-10T17:05:29.008Z",
-    "estimatedReadyAt": null,
-    "actualReadyAt": null,
-    "completedAt": null,
-    "isNoContact": false,
-    "customerSnapshot": {
-      "customerId": null,
-      "name": "got",
-      "phone": "987987987987",
-      "isWalkIn": false
-    },
-    "isPriority": true
-  },
-  {
-    "id": "8dabd0a2-21b2-40c7-b693-af63d9db975c",
-    "status": "OVEN",
-    "source": "CALL_IN",
-    "items": [
-      {
-        "name": "Pepperoni",
-        "price": 12,
-        "id": 1770048221287
-      },
-      {
-        "name": "Pepperoni",
-        "price": 12,
-        "id": 1770048221503
-      },
-      {
-        "name": "Pepperoni",
-        "price": 12,
-        "id": 1770048221703
-      },
-      {
-        "name": "Veggie",
-        "price": 11,
-        "id": 1770048222404
-      }
-    ],
-    "totalPrice": 47,
-    "createdAt": "2026-02-02T16:03:43.389Z",
-    "updatedAt": "2026-02-09T22:21:03.366Z",
-    "estimatedReadyAt": null,
-    "actualReadyAt": null,
-    "completedAt": null,
-    "isNoContact": false,
-    "customerSnapshot": {
-      "customerId": null,
-      "name": "bob",
-      "phone": "987987987987",
-      "isWalkIn": false
-    },
-    "assignedTo": "David",
-    "ovenEnteredAt": "2026-02-05T19:38:30.726Z"
-  },
-  {
-    "id": "c222cae8-a678-4e83-b81c-16fc3769d42b",
-    "status": "IN_PREP",
-    "source": "CALL_IN",
-    "items": [
-      {
-        "name": "Pepperoni",
-        "price": 12,
-        "id": 1770048231757
-      },
-      {
-        "name": "Pepperoni",
-        "price": 12,
-        "id": 1770048231974
-      },
-      {
-        "name": "Margherita",
-        "price": 10,
-        "id": 1770048232507
-      },
-      {
-        "name": "Margherita",
-        "price": 10,
-        "id": 1770048232707
-      },
-      {
-        "name": "Margherita",
-        "price": 10,
-        "id": 1770048232907
-      },
-      {
-        "name": "Margherita",
-        "price": 10,
-        "id": 1770048233058
-      },
-      {
-        "name": "Veggie",
-        "price": 11,
-        "id": 1770048233758
-      },
-      {
-        "name": "Veggie",
-        "price": 11,
-        "id": 1770048233942
-      },
-      {
-        "name": "Veggie",
-        "price": 11,
-        "id": 1770048234125
-      }
-    ],
-    "totalPrice": 97,
-    "createdAt": "2026-02-09T17:25:37.763Z",
-    "updatedAt": "2026-02-10T17:27:33.546Z",
-    "estimatedReadyAt": null,
-    "actualReadyAt": null,
-    "completedAt": null,
-    "isNoContact": false,
-    "customerSnapshot": {
-      "customerId": null,
-      "name": "jac",
-      "phone": "21312312312",
-      "isWalkIn": false
-    },
-    "isPriority": true
-  },
-  {
-    "id": "ac8c046a-2d84-4b16-b122-4aafa0e98edd",
-    "status": "NEW",
-    "source": "CALL_IN",
-    "items": [
-      {
-        "name": "Margherita",
-        "price": 10,
-        "id": 1770053514488
-      },
-      {
-        "name": "Margherita",
-        "price": 10,
-        "id": 1770053514704
-      },
-      {
-        "name": "Pepperoni",
-        "price": 12,
-        "id": 1770053515204
-      },
-      {
-        "name": "Pepperoni",
-        "price": 12,
-        "id": 1770053515438
-      },
-      {
-        "name": "Veggie",
-        "price": 11,
-        "id": 1770053515855
-      },
-      {
-        "name": "Veggie",
-        "price": 11,
-        "id": 1770053516087
-      }
-    ],
-    "totalPrice": 66,
-    "createdAt": "2026-02-09T16:57:03.779Z",
-    "updatedAt": "2026-02-10T16:57:03.798Z",
-    "estimatedReadyAt": null,
-    "actualReadyAt": null,
-    "completedAt": null,
-    "isNoContact": false,
-    "customerSnapshot": {
-      "customerId": null,
-      "name": "bob rossie",
-      "phone": "2342342344",
-      "isWalkIn": false
-    },
-    "isPriority": true
-  },
-  {
-    "id": "57be7376-952e-41ae-99c1-e1dec2271dbd",
-    "status": "IN_PREP",
-    "source": "CALL_IN",
-    "items": [
-      {
-        "name": "Veggie",
-        "price": 11,
-        "id": 1770058089930
-      },
-      {
-        "name": "Veggie",
-        "price": 11,
-        "id": 1770058090180
-      }
-    ],
-    "totalPrice": 22,
-    "createdAt": "2026-02-02T18:48:13.976Z",
-    "updatedAt": "2026-02-05T19:18:39.375Z",
-    "estimatedReadyAt": null,
-    "actualReadyAt": null,
-    "completedAt": null,
-    "isNoContact": false,
-    "customerSnapshot": {
-      "customerId": null,
-      "name": "Yukon Gold",
-      "phone": "7123234234",
-      "isWalkIn": false
-    },
-    "assignedTo": "David"
-  },
-  {
-    "id": "5189047e-d7ec-4245-b6a3-7288c7d3ed55",
-    "status": "NEW",
-    "source": "CALL_IN",
-    "items": [
-      {
-        "id": 1770078665910,
-        "name": "Pepperoni",
-        "size": "Medium (12\")",
-        "crust": "Deep Dish",
-        "toppings": [
-          "Pepperoni",
-          "Mushrooms",
-          "Green Peppers"
-        ],
-        "price": 16,
-        "notes": "extra crispy",
-        "details": "Medium (12\") | Deep Dish"
-      },
-      {
-        "id": 1770078683800,
-        "name": "Margherita",
-        "size": "Small (10\")",
-        "crust": "Original Hand Tossed",
-        "toppings": [
-          "Pepperoni",
-          "Bacon"
-        ],
-        "price": 10.4,
-        "notes": "no mayo",
-        "details": "Small (10\") | Original Hand Tossed"
-      }
-    ],
-    "totalPrice": 26.4,
-    "createdAt": "2026-02-09T17:05:52.598Z",
-    "updatedAt": "2026-02-10T17:05:53.884Z",
-    "estimatedReadyAt": null,
-    "actualReadyAt": null,
-    "completedAt": null,
-    "isNoContact": false,
-    "customerSnapshot": {
-      "customerId": null,
-      "name": "chuck",
-      "phone": "234 456 4567",
+      "name": "dwayne",
+      "phone": "(805)8767896",
       "type": "PICKUP",
       "address": null,
-      "isWalkIn": false
+      "isWalkIn": true
     },
-    "isPriority": true
+    "assignedTo": null
   },
   {
-    "id": "f63dd7b8-9b57-419b-af28-d81f766b5cb2",
+    "id": "3e69b8e3-e1bd-440d-a9fe-2dd45a3c5021",
+    "displayId": 2,
     "status": "NEW",
-    "source": "CALL_IN",
+    "assumeChefRole": true,
+    "source": "REGISTER",
     "items": [
       {
-        "id": 1770080107870,
-        "name": "Pepperoni",
-        "size": "Medium (12\")",
-        "crust": "Gluten Free",
-        "toppings": [
-          "Pepperoni",
-          "Bacon",
-          "Extra Cheese",
-          "Sausage"
-        ],
-        "price": 20,
-        "notes": "",
-        "details": "Medium (12\") | Gluten Free"
-      }
-    ],
-    "totalPrice": 20,
-    "createdAt": "2026-02-09T17:15:53.625Z",
-    "updatedAt": "2026-02-10T17:15:53.713Z",
-    "estimatedReadyAt": null,
-    "actualReadyAt": null,
-    "completedAt": null,
-    "isNoContact": false,
-    "customerSnapshot": {
-      "customerId": null,
-      "name": "Frank",
-      "phone": "1234324321",
-      "type": "DELIVERY",
-      "address": "1111 morningside way",
-      "isWalkIn": false
-    },
-    "isPriority": true
-  },
-  {
-    "id": "b1041ce2-fa62-4de5-b8d2-82bc3eb646e0",
-    "status": "NEW",
-    "source": "CALL_IN",
-    "items": [
-      {
-        "id": 1770084998716,
+        "id": 1770847930632,
         "name": "Margherita",
         "size": "Medium (12\")",
         "crust": "Original Hand Tossed",
@@ -459,271 +56,64 @@
       }
     ],
     "totalPrice": 10,
-    "createdAt": "2026-02-09T17:18:52.704Z",
-    "updatedAt": "2026-02-10T17:18:52.775Z",
+    "isPriority": false,
+    "createdAt": "2026-02-11T22:12:12.436Z",
+    "updatedAt": null,
     "estimatedReadyAt": null,
     "actualReadyAt": null,
-    "completedAt": null,
-    "isNoContact": false,
+    "customerSnapshot": {
+      "customerId": null,
+      "name": "chuck",
+      "phone": "(805)3453456",
+      "type": "PICKUP",
+      "address": null,
+      "isWalkIn": true
+    },
+    "assignedTo": null
+  },
+  {
+    "id": "39804095-f557-4d18-9b66-2c55dd85c7a1",
+    "displayId": 3,
+    "status": "NEW",
+    "assumeChefRole": false,
+    "source": "REGISTER",
+    "items": [
+      {
+        "id": 1770848803842,
+        "name": "Margherita",
+        "size": "Medium (12\")",
+        "crust": "Original Hand Tossed",
+        "toppings": [],
+        "price": 10,
+        "notes": "",
+        "details": "Medium (12\") | Original Hand Tossed"
+      }
+    ],
+    "totalPrice": 10,
+    "isPriority": false,
+    "createdAt": "2026-02-11T22:26:46.595Z",
+    "updatedAt": null,
+    "estimatedReadyAt": null,
+    "actualReadyAt": null,
     "customerSnapshot": {
       "customerId": null,
       "name": "doug",
-      "phone": "8768877",
+      "phone": "(805)8977890",
       "type": "PICKUP",
       "address": null,
       "isWalkIn": false
     },
-    "isPriority": true
+    "assignedTo": null
   },
   {
-    "id": "be50ae4b-3685-4d8a-a0e3-1fa4c7f55ca3",
-    "status": "NEW",
-    "source": "CALL_IN",
-    "items": [
-      {
-        "id": 1770086664137,
-        "name": "Margherita",
-        "size": "Medium (12\")",
-        "crust": "Original Hand Tossed",
-        "toppings": [],
-        "price": 10,
-        "notes": "",
-        "details": "Medium (12\") | Original Hand Tossed"
-      }
-    ],
-    "totalPrice": 10,
-    "createdAt": "2026-02-09T17:05:59.951Z",
-    "updatedAt": "2026-02-10T17:06:01.779Z",
-    "estimatedReadyAt": null,
-    "actualReadyAt": null,
-    "completedAt": null,
-    "isNoContact": false,
-    "customerSnapshot": {
-      "customerId": null,
-      "name": "chuck",
-      "phone": "(805) 4356",
-      "type": "PICKUP",
-      "address": null,
-      "isWalkIn": false
-    },
-    "isPriority": true
-  },
-  {
-    "id": "48c628f0-1ef8-4af8-8bc6-9c652221a6fd",
-    "status": "NEW",
-    "source": "CALL_IN",
-    "items": [
-      {
-        "id": 1770100302787,
-        "name": "Margherita",
-        "size": "Large (14\")",
-        "crust": "Original Hand Tossed",
-        "toppings": [
-          "Pepperoni",
-          "Mushrooms",
-          "Extra Cheese"
-        ],
-        "price": 17.4,
-        "notes": "",
-        "details": "Large (14\") | Original Hand Tossed"
-      },
-      {
-        "id": 1770100327229,
-        "name": "Veggie Supreme",
-        "size": "Medium (12\")",
-        "crust": "Original Hand Tossed",
-        "toppings": [
-          "Mushrooms",
-          "Onions",
-          "Green Peppers",
-          "Black Olives"
-        ],
-        "price": 14,
-        "notes": "",
-        "details": "Medium (12\") | Original Hand Tossed"
-      }
-    ],
-    "totalPrice": 31.4,
-    "createdAt": "2026-02-09T17:14:31.214Z",
-    "updatedAt": "2026-02-10T17:14:31.253Z",
-    "estimatedReadyAt": null,
-    "actualReadyAt": null,
-    "completedAt": null,
-    "isNoContact": false,
-    "customerSnapshot": {
-      "customerId": null,
-      "name": "Dallas",
-      "phone": "(805) 3469932",
-      "type": "PICKUP",
-      "address": "",
-      "isWalkIn": false
-    },
-    "isPriority": true
-  },
-  {
-    "id": "d7580bb0-e085-4d16-86dd-ed6cd45219be",
-    "displayId": null,
-    "status": "NEW",
-    "source": "CALL_IN",
-    "items": [
-      {
-        "id": 1770318871958,
-        "name": "Pepperoni",
-        "size": "Medium (12\")",
-        "crust": "Original Hand Tossed",
-        "toppings": [
-          "Pepperoni"
-        ],
-        "price": 12,
-        "notes": "",
-        "details": "Medium (12\") | Original Hand Tossed"
-      }
-    ],
-    "totalPrice": 12,
-    "createdAt": "2026-02-05T19:14:53.295Z",
-    "updatedAt": null,
-    "estimatedReadyAt": null,
-    "actualReadyAt": null,
-    "completedAt": null,
-    "isNoContact": false,
-    "customerSnapshot": {
-      "customerId": null,
-      "name": "Bob",
-      "phone": "812 4325847",
-      "type": "PICKUP",
-      "address": null,
-      "isWalkIn": false
-    }
-  },
-  {
-    "id": "74c8a1a5-875e-43f5-aa08-07f51b279a1a",
-    "displayId": 1,
-    "status": "NEW",
-    "source": "CALL_IN",
-    "items": [
-      {
-        "id": 1770324918670,
-        "name": "Pepperoni",
-        "size": "Medium (12\")",
-        "crust": "Original Hand Tossed",
-        "toppings": [
-          "Pepperoni"
-        ],
-        "price": 12,
-        "notes": "",
-        "details": "Medium (12\") | Original Hand Tossed"
-      }
-    ],
-    "totalPrice": 12,
-    "createdAt": "2026-02-09T17:14:51.753Z",
-    "updatedAt": "2026-02-10T17:14:53.128Z",
-    "estimatedReadyAt": null,
-    "actualReadyAt": null,
-    "completedAt": null,
-    "isNoContact": false,
-    "customerSnapshot": {
-      "customerId": null,
-      "name": "bobbi",
-      "phone": "8056345746",
-      "type": "PICKUP",
-      "address": null,
-      "isWalkIn": false
-    },
-    "isPriority": true
-  },
-  {
-    "id": "91cbee83-53f8-44af-8bb1-43713332f265",
-    "displayId": 2,
-    "status": "NEW",
-    "source": "CALL_IN",
-    "items": [
-      {
-        "id": 1770667359727,
-        "name": "Veggie Supreme",
-        "size": "Medium (12\")",
-        "crust": "Original Hand Tossed",
-        "toppings": [
-          "Mushrooms",
-          "Onions",
-          "Green Peppers",
-          "Black Olives"
-        ],
-        "price": 14,
-        "notes": "",
-        "details": "Medium (12\") | Original Hand Tossed"
-      },
-      {
-        "id": 1770667370431,
-        "name": "Pepperoni",
-        "size": "Medium (12\")",
-        "crust": "Original Hand Tossed",
-        "toppings": [
-          "Pepperoni"
-        ],
-        "price": 12,
-        "notes": "soggy",
-        "details": "Medium (12\") | Original Hand Tossed"
-      }
-    ],
-    "totalPrice": 26,
-    "createdAt": "2026-02-09T20:03:10.074Z",
-    "updatedAt": null,
-    "estimatedReadyAt": null,
-    "actualReadyAt": null,
-    "completedAt": null,
-    "isNoContact": false,
-    "customerSnapshot": {
-      "customerId": null,
-      "name": "bumpo",
-      "phone": "8058764587",
-      "type": "PICKUP",
-      "address": null,
-      "isWalkIn": false
-    }
-  },
-  {
-    "id": "d2f5579b-bbe6-4a83-bff6-e002589fb844",
-    "displayId": 3,
-    "status": "NEW",
-    "source": "CALL_IN",
-    "items": [
-      {
-        "id": 1770672127223,
-        "name": "Margherita",
-        "size": "Medium (12\")",
-        "crust": "Original Hand Tossed",
-        "toppings": [],
-        "price": 10,
-        "notes": "",
-        "details": "Medium (12\") | Original Hand Tossed"
-      }
-    ],
-    "totalPrice": 10,
-    "createdAt": "2026-02-09T17:15:17.646Z",
-    "updatedAt": "2026-02-10T17:15:19.589Z",
-    "estimatedReadyAt": null,
-    "actualReadyAt": null,
-    "completedAt": null,
-    "isNoContact": false,
-    "customerSnapshot": {
-      "customerId": null,
-      "name": "Chuckoh",
-      "phone": "8056453647",
-      "type": "PICKUP",
-      "address": null,
-      "isWalkIn": false
-    },
-    "isPriority": true
-  },
-  {
-    "id": "242b536b-fa20-460a-8dff-894d5e37ea85",
+    "id": "c72da2c8-f0de-49b4-b510-e6b85a5bed02",
     "displayId": 4,
     "status": "NEW",
     "assumeChefRole": false,
-    "source": "CALL_IN",
+    "source": "REGISTER",
     "items": [
       {
-        "id": 1770677655346,
+        "id": 1770849163043,
         "name": "Margherita",
         "size": "Medium (12\")",
         "crust": "Original Hand Tossed",
@@ -734,31 +124,66 @@
       }
     ],
     "totalPrice": 10,
-    "createdAt": "2026-02-09T17:15:03.940Z",
-    "updatedAt": "2026-02-10T17:15:12.954Z",
+    "isPriority": false,
+    "createdAt": "2026-02-11T22:32:45.843Z",
+    "updatedAt": null,
     "estimatedReadyAt": null,
     "actualReadyAt": null,
-    "completedAt": null,
-    "isNoContact": false,
     "customerSnapshot": {
       "customerId": null,
-      "name": "sdff",
-      "phone": "5676545678",
+      "name": "David",
+      "phone": "(805)6543456",
       "type": "PICKUP",
       "address": null,
       "isWalkIn": false
     },
-    "isPriority": true
+    "assignedTo": null
   },
   {
-    "id": "7e2bbcca-813b-4c62-969e-1c10b599ec59",
-    "displayId": 3,
+    "id": "5463abf2-2290-49dc-9521-e2971924f075",
+    "displayId": 5,
     "status": "NEW",
-    "assumeChefRole": true,
+    "assumeChefRole": false,
     "source": "REGISTER",
     "items": [
       {
-        "id": 1770748481976,
+        "id": 1770849707070,
+        "name": "Pepperoni",
+        "size": "Medium (12\")",
+        "crust": "Original Hand Tossed",
+        "toppings": [
+          "Pepperoni"
+        ],
+        "price": 12,
+        "notes": "",
+        "details": "Medium (12\") | Original Hand Tossed"
+      }
+    ],
+    "totalPrice": 12,
+    "isPriority": false,
+    "createdAt": "2026-02-11T22:41:50.236Z",
+    "updatedAt": null,
+    "estimatedReadyAt": null,
+    "actualReadyAt": null,
+    "customerSnapshot": {
+      "customerId": null,
+      "name": "baxter",
+      "phone": "(805)8765678",
+      "type": "PICKUP",
+      "address": null,
+      "isWalkIn": false
+    },
+    "assignedTo": null
+  },
+  {
+    "id": "4bc4fff6-5f6c-4e79-8561-d1d7dca31fb0",
+    "displayId": 6,
+    "status": "NEW",
+    "assumeChefRole": false,
+    "source": "REGISTER",
+    "items": [
+      {
+        "id": 1770850119460,
         "name": "Margherita",
         "size": "Medium (12\")",
         "crust": "Original Hand Tossed",
@@ -769,135 +194,19 @@
       }
     ],
     "totalPrice": 10,
-    "isPriority": true,
-    "createdAt": "2026-02-09T18:34:47.426Z",
+    "isPriority": false,
+    "createdAt": "2026-02-11T22:48:42.124Z",
     "updatedAt": null,
     "estimatedReadyAt": null,
     "actualReadyAt": null,
-    "completedAt": null,
-    "isNoContact": false,
     "customerSnapshot": {
       "customerId": null,
-      "name": "bobo",
-      "phone": "(805)8768765",
+      "name": "stupid",
+      "phone": "(805)4563456",
       "type": "PICKUP",
       "address": null,
-      "isWalkIn": true
-    }
-  },
-  {
-    "id": "4fc26469-d9eb-4c7b-960c-80fe4d9a290b",
-    "displayId": 3,
-    "status": "NEW",
-    "assumeChefRole": true,
-    "source": "REGISTER",
-    "items": [
-      {
-        "id": 1770749781898,
-        "name": "Margherita",
-        "size": "Medium (12\")",
-        "crust": "Original Hand Tossed",
-        "toppings": [],
-        "price": 10,
-        "notes": "",
-        "details": "Medium (12\") | Original Hand Tossed"
-      }
-    ],
-    "totalPrice": 10,
-    "isPriority": true,
-    "createdAt": "2026-02-09T18:56:27.510Z",
-    "updatedAt": null,
-    "estimatedReadyAt": null,
-    "actualReadyAt": null,
-    "completedAt": null,
-    "isNoContact": false,
-    "customerSnapshot": {
-      "customerId": null,
-      "name": "mach1",
-      "phone": "(805)3453456",
-      "type": "PICKUP",
-      "address": null,
-      "isWalkIn": true
-    }
-  },
-  {
-    "id": "41a64714-dcfc-4d0d-9128-28bd4cf422e7",
-    "displayId": 3,
-    "status": "NEW",
-    "assumeChefRole": true,
-    "source": "REGISTER",
-    "items": [
-      {
-        "id": 1770755936903,
-        "name": "Veggie Supreme",
-        "size": "Medium (12\")",
-        "crust": "Original Hand Tossed",
-        "toppings": [
-          "Mushrooms",
-          "Onions",
-          "Green Peppers",
-          "Black Olives"
-        ],
-        "price": 14,
-        "notes": "",
-        "details": "Medium (12\") | Original Hand Tossed"
-      }
-    ],
-    "totalPrice": 14,
-    "isPriority": true,
-    "createdAt": "2026-02-09T20:38:59.272Z",
-    "updatedAt": null,
-    "estimatedReadyAt": null,
-    "actualReadyAt": null,
-    "completedAt": null,
-    "isNoContact": false,
-    "customerSnapshot": {
-      "customerId": null,
-      "name": "chocktah",
-      "phone": "(805)3453456",
-      "type": "PICKUP",
-      "address": null,
-      "isWalkIn": true
-    }
-  },
-  {
-    "id": "c2897948-fe72-4dfd-86e8-a82a799fa38b",
-    "displayId": 4,
-    "status": "NEW",
-    "assumeChefRole": true,
-    "source": "REGISTER",
-    "items": [
-      {
-        "id": 1770758504958,
-        "name": "Veggie Supreme",
-        "size": "Medium (12\")",
-        "crust": "Original Hand Tossed",
-        "toppings": [
-          "Mushrooms",
-          "Onions",
-          "Green Peppers",
-          "Black Olives"
-        ],
-        "price": 14,
-        "notes": "",
-        "details": "Medium (12\") | Original Hand Tossed"
-      }
-    ],
-    "totalPrice": 14,
-    "isPriority": true,
-    "createdAt": "2026-02-09T21:22:14.184Z",
-    "updatedAt": null,
-    "estimatedReadyAt": null,
-    "actualReadyAt": null,
-    "completedAt": null,
-    "isNoContact": false,
-    "customerSnapshot": {
-      "customerId": null,
-      "name": "Porky",
-      "phone": "(805)8765635",
-      "type": "PICKUP",
-      "address": null,
-      "isWalkIn": true
-    }
+      "isWalkIn": false
+    },
+    "assignedTo": null
   }
 ]

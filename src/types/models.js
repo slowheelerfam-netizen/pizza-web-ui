@@ -1,6 +1,6 @@
 export const ORDER_STATUS = {
   NEW: 'NEW',
-  CONFIRMED: 'CONFIRMED',
+  CONFIRMED: 'QUEUED',
   IN_PREP: 'IN_PREP',
   MONITOR: 'MONITOR',
   OVEN: 'OVEN',
@@ -89,8 +89,8 @@ export const MENU_ITEMS = [
       'https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=800&auto=format&fit=crop',
   },
 ]
-// ---- Order defaults / flags ----
+
 export const ORDER_DEFAULTS = {
-  assumeChef: false,
+  assumeChefRole: false,
   isPriority: false,
 }

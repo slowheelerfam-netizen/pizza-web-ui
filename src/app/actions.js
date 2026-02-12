@@ -1,14 +1,12 @@
 'use server'
 
-import { createServerServices } from '@/lib/createServerServices'
-import { revalidatePath } from 'next/cache'
-import { FileOrderRepository } from '@/infrastructure/repositories/FileOrderRepository'
-import { FileWarningRepository } from '@/infrastructure/repositories/FileWarningRepository'
-import { FileEmployeeRepository } from '@/infrastructure/repositories/FileEmployeeRepository'
+import { createServerServices } from '@/server'
+import { revalidatePath, unstable_noStore } from 'next/cache'
 
 export async function createOrderAction(_, formData) {
-  const services = createServerServices()
-  const orderService = services.orderService
+  unstable_noStore()
+
+  const { orderService } = createServerServices()
 
   const input = {
     customerName: formData.get('customerName'),
@@ -16,88 +14,75 @@ export async function createOrderAction(_, formData) {
     type: formData.get('type'),
     address: formData.get('address'),
     isWalkIn: formData.get('isWalkIn') === 'true',
-    assumeChefRole: formData.get('assumeChefRole') === 'true', // ✅
+    assumeChefRole: formData.get('assumeChefRole') === 'true',
     isPriority: formData.get('isPriority') === 'true',
     items: JSON.parse(formData.get('items') || '[]'),
     totalPrice: Number(formData.get('totalPrice') || 0),
     source: 'REGISTER',
+    specialInstructions: formData.get('specialInstructions'),
   }
 
-  try {
-    const order = await orderService.createOrder(input)
-    revalidatePath('/')
-    return { success: true, order }
-  } catch (error) {
-    return {
-      success: false,
-      message: error.message || 'Order creation failed',
-    }
-  }
+  const order = await orderService.createOrder(input)
+
+  revalidatePath('/')
+  revalidatePath('/register')
+
+  return { success: true, order }
+}
+
+export async function updateStatusAction(orderId, status, assignedTo = null) {
+  unstable_noStore()
+
+  const { orderService } = createServerServices()
+
+  const order = await orderService.updateStatus(orderId, status, assignedTo)
+
+  revalidatePath('/register')
+  revalidatePath('/kitchen')
+  revalidatePath('/oven')
+  revalidatePath('/monitor')
+
+  return { success: true, order }
 }
 
 export async function updateOrderDetailsAction(orderId, updates) {
-  const services = createServerServices()
-  const orderService = services.orderService
+  unstable_noStore()
 
-  try {
-    const order = await orderService.updateOrderDetails(orderId, updates)
-    revalidatePath('/')
-    return { success: true, order }
-  } catch (error) {
-    return {
-      success: false,
-      message: error.message || 'Order update failed',
-    }
-  }
+  const { orderService } = createServerServices()
+
+  const order = await orderService.updateOrderDetails(orderId, updates)
+
+  revalidatePath('/register')
+  revalidatePath('/kitchen')
+  revalidatePath('/oven')
+  revalidatePath('/monitor')
+
+  return { success: true, order }
 }
 
 export async function checkCustomerWarningAction(phone) {
-  const services = createServerServices()
+  unstable_noStore()
 
-  const warningRepo =
-    services.warningRepository || services.warningRepo || null
+  const { repositories } = createServerServices()
 
-  if (!warningRepo || typeof warningRepo.findActiveByPhone !== 'function') {
-    return { hasWarning: false }
-  }
+  const warnings = await repositories.warning.findActiveByIdentifiers({ phone })
+  const warning = warnings[0] || null
 
-  const warning = await warningRepo.findActiveByPhone(phone)
-
-  if (!warning) {
-    return { hasWarning: false }
-  }
-
-  return {
-    hasWarning: true,
-    warning,
-  }
+  return warning ? { hasWarning: true, warning } : { hasWarning: false }
 }
 
-// --------------------------------------------------
-// Demo / UI compatibility stubs
-// --------------------------------------------------
 export async function fetchDashboardData() {
-  const orderRepo = new FileOrderRepository()
-  const warningRepo = new FileWarningRepository()
-  const employeeRepo = new FileEmployeeRepository()
+  unstable_noStore()
+
+  const { repositories } = createServerServices()
 
   const [orders, warnings, employees] = await Promise.all([
-    orderRepo.getAll(),
-    warningRepo.getAll(),
-    employeeRepo.getAll(),
+    repositories.order.getAll(),
+    repositories.warning.getAll(),
+    repositories.employee.getAll(),
   ])
 
-  return {
-    orders,
-    warnings,
-    employees,
-  }
-}
-
-
-export async function updateStatusAction() {
-  // no-op in demo
-  return { ok: true }
+  return { orders, warnings, employees }
 }
 
 export async function addEmployeeAction() {

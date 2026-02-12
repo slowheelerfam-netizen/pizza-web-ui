@@ -1,11 +1,8 @@
 import fs from 'fs'
 import path from 'path'
+import { DB_PATHS } from '../../lib/config'
 
-const DATA_FILE = path.join(
-  process.cwd(),
-  'data',
-  'employees.json'
-)
+const DATA_FILE = DB_PATHS.EMPLOYEES
 
 export class FileEmployeeRepository {
   async getAll() {
@@ -18,11 +15,11 @@ export class FileEmployeeRepository {
   }
 
   async saveAll(employees) {
-    fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true })
-    fs.writeFileSync(
-      DATA_FILE,
-      JSON.stringify(employees, null, 2),
-      'utf-8'
-    )
+    const dir = path.dirname(DATA_FILE)
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true })
+    }
+
+    fs.writeFileSync(DATA_FILE, JSON.stringify(employees, null, 2), 'utf-8')
   }
 }

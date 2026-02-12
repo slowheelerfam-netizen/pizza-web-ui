@@ -1,67 +1,39 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useOptimistic, startTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { demoStorage } from '../lib/demoStorage'
 import OrderEditModal from './OrderEditModal'
 import OrderDetailsModal from './OrderDetailsModal'
 
 export default function MonitorDisplay({ initialOrders, updateStatusAction }) {
   const router = useRouter()
-  const [orders, setOrders] = useState(initialOrders)
+
+  // Optimistic UI
+  const [optimisticOrders, addOptimisticOrder] = useOptimistic(
+    initialOrders,
+    (state, updatedOrder) => {
+      return state.map((o) =>
+        o.id === updatedOrder.id ? { ...o, ...updatedOrder } : o
+      )
+    }
+  )
 
   // Interaction State
   const [editingOrder, setEditingOrder] = useState(null)
   const [detailsOrder, setDetailsOrder] = useState(null)
 
   useEffect(() => {
-    // Merge server orders with local storage orders
-    const localOrders = demoStorage.getOrders()
-    // Create a map by ID to merge
-    const orderMap = new Map()
-
-    // Add server orders first
-    initialOrders.forEach((o) => orderMap.set(o.id, o))
-
-    // Merge/Overwrite with local orders SMARTLY (Trust newer timestamp)
-    localOrders.forEach((localOrder) => {
-      const serverOrder = orderMap.get(localOrder.id)
-
-      if (!serverOrder) {
-        orderMap.set(localOrder.id, localOrder)
-      } else {
-        const serverTime = new Date(serverOrder.updatedAt || 0).getTime()
-        const localTime = new Date(localOrder.updatedAt || 0).getTime()
-
-        if (localTime > serverTime) {
-          orderMap.set(localOrder.id, localOrder)
-        }
-      }
-    })
-
-    setTimeout(() => {
-      setOrders(Array.from(orderMap.values()))
-    }, 0)
-  }, [initialOrders])
-
-  useEffect(() => {
     const interval = setInterval(() => {
       router.refresh()
-    }, 2000)
+    }, 5000)
     return () => clearInterval(interval)
   }, [router])
 
   const handleStatusUpdate = async (orderId, newStatus, assignedTo) => {
-    // Optimistic update
-    setOrders((current) =>
-      current.map((o) =>
-        o.id === orderId
-          ? { ...o, status: newStatus, assignedTo: assignedTo || o.assignedTo }
-          : o
-      )
-    )
+    startTransition(() => {
+      addOptimisticOrder({ id: orderId, status: newStatus, assignedTo })
+    })
 
-    // Close modals
     if (editingOrder?.id === orderId) {
       setEditingOrder(null)
     }
@@ -69,118 +41,126 @@ export default function MonitorDisplay({ initialOrders, updateStatusAction }) {
     if (updateStatusAction) {
       await updateStatusAction(orderId, newStatus, assignedTo)
     }
-
-    // Always update local storage
-    demoStorage.updateOrderStatus(orderId, newStatus, assignedTo)
-
-    router.refresh()
   }
 
-  // CHUNK 2: Monitor displays MONITOR orders only (passed from page)
-  // We double check the status here just in case local storage brings in others
-  const monitorOrders = orders
+  const prepOrders = optimisticOrders
     .filter((o) => o.status === 'MONITOR')
     .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
 
-  return (
-    <div className="min-h-screen bg-slate-900 p-4 text-white md:p-8">
-      <header className="mb-8 flex items-center justify-between border-b border-slate-700 pb-6">
-        <h1 className="text-4xl font-black tracking-tight">
-          🔪 MONITOR: PREP STATION
-        </h1>
-        <div className="rounded-full bg-slate-800 px-4 py-2 font-mono text-xl text-slate-400">
-          {monitorOrders.length} Active
-        </div>
-      </header>
+  const ovenOrders = optimisticOrders
+    .filter((o) => o.status === 'OVEN')
+    .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
 
-      <div className="grid grid-cols-1 items-start gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {monitorOrders.map((order) => (
-          <div
-            key={order.id}
-            onClick={() => setEditingOrder(order)}
-            onDoubleClick={(e) => {
-              e.stopPropagation()
-              setEditingOrder(null)
-              setDetailsOrder(order)
-            }}
-            className="cursor-pointer rounded-2xl border-2 border-slate-700 bg-slate-800 p-6 shadow-xl transition-all hover:border-slate-500 hover:shadow-2xl"
-          >
-            <div className="mb-6 flex items-center justify-between border-b-2 border-slate-700 pb-4">
-              <h3 className="truncate text-3xl font-extrabold tracking-tight text-white">
-                {order.customerSnapshot.name}
-              </h3>
-              <span className="rounded-lg bg-blue-900 px-3 py-1.5 text-sm font-black tracking-wider text-blue-200 uppercase">
-                MONITOR
-              </span>
-            </div>
-
-            <div className="space-y-6">
-              {order.items.map((item, idx) => (
-                <div key={idx} className="text-lg">
-                  <div className="flex items-start justify-between">
-                    <span className="text-xl font-bold text-slate-100">
-                      {item.quantity || 1}x {item.name}
-                    </span>
-                    <span className="font-semibold whitespace-nowrap text-slate-400">
-                      {item.size}
-                    </span>
-                  </div>
-
-                  <div className="mt-1 pl-6 text-base text-slate-300">
-                    <div className="font-medium">{item.crust}</div>
-                    {item.toppings && item.toppings.length > 0 && (
-                      <div className="mt-1 leading-relaxed text-slate-400">
-                        {item.toppings.join(', ')}
-                      </div>
-                    )}
-                  </div>
-
-                  {item.notes && (
-                    <div className="mt-3 rounded-lg border border-amber-900/50 bg-amber-900/40 px-3 py-2 text-base font-bold text-amber-400">
-                      NOTE: {item.notes}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-6 flex items-center justify-between border-t-2 border-slate-700 pt-4 text-sm font-medium text-slate-400">
-              <span className="font-mono text-base">
-                {new Date(order.createdAt).toLocaleTimeString([], {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </span>
-              {order.assignedTo && (
-                <span className="flex items-center gap-2 rounded-full bg-slate-700/50 px-3 py-1 text-slate-300">
-                  👨‍🍳 {order.assignedTo}
-                </span>
-              )}
-            </div>
-          </div>
-        ))}
-
-        {monitorOrders.length === 0 && (
-          <div className="col-span-full py-20 text-center text-slate-500">
-            No orders in Monitor
-          </div>
-        )}
+  const renderCard = (order, color) => (
+    <div
+      key={order.id}
+      onClick={() => setEditingOrder(order)}
+      onDoubleClick={(e) => {
+        e.stopPropagation()
+        setEditingOrder(null)
+        setDetailsOrder(order)
+      }}
+      className={`cursor-pointer rounded-lg border-l-4 p-4 shadow-sm transition-all hover:translate-x-1 ${
+        color === 'green'
+          ? 'border-green-500 bg-green-50'
+          : 'border-orange-500 bg-orange-50'
+      }`}
+    >
+      <div className="flex justify-between">
+        <h3 className="font-bold text-gray-900">
+          {order.customerSnapshot?.name}
+        </h3>
+        <span className="text-xs font-bold text-gray-500">{order.status}</span>
       </div>
 
-      {/* EDIT MODAL (Single Click) */}
+      {/* Expanded Details: Items & Instructions */}
+      <div className="mt-3 border-t border-gray-200 pt-2">
+        {order.specialInstructions && (
+          <div className="mb-2 rounded bg-yellow-100 p-2 text-sm font-bold text-red-600">
+            NOTE: {order.specialInstructions}
+          </div>
+        )}
+        <ul className="space-y-1 text-sm text-gray-800">
+          {order.items?.map((item, idx) => (
+            <li
+              key={idx}
+              className="border-b border-gray-100 pb-1 last:border-0"
+            >
+              <div className="font-bold">
+                {item.quantity}x {item.name}{' '}
+                <span className="text-xs font-normal text-gray-500">
+                  ({item.size})
+                </span>
+              </div>
+              {item.toppings && item.toppings.length > 0 && (
+                <div className="pl-4 text-xs text-gray-600">
+                  + {item.toppings.join(', ')}
+                </div>
+              )}
+              {item.notes && (
+                <div className="pl-4 text-xs text-gray-500 italic">
+                  "{item.notes}"
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="mt-3 text-right text-sm font-bold text-gray-900">
+        Total: ${order.totalPrice.toFixed(2)}
+      </div>
+
+      {order.assignedTo && (
+        <div className="mt-2 text-xs font-medium text-indigo-600">
+          👨‍🍳 {order.assignedTo}
+        </div>
+      )}
+    </div>
+  )
+
+  return (
+    <div className="min-h-screen bg-slate-900 p-8">
+      <header className="mb-8 flex items-center justify-between border-b border-slate-700 pb-6">
+        <h1 className="text-4xl font-black tracking-tight text-white">
+          🔪 MONITOR: PREP STATION
+        </h1>
+      </header>
+
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+        {/* PREP */}
+        <div className="rounded-xl bg-slate-800 p-4">
+          <h2 className="mb-4 text-2xl font-bold text-green-400">
+            PREP ({prepOrders.length})
+          </h2>
+          <div className="space-y-4">
+            {prepOrders.map((o) => renderCard(o, 'green'))}
+          </div>
+        </div>
+
+        {/* OVEN */}
+        <div className="rounded-xl bg-slate-800 p-4">
+          <h2 className="mb-4 text-2xl font-bold text-orange-400">
+            OVEN ({ovenOrders.length})
+          </h2>
+          <div className="space-y-4">
+            {ovenOrders.map((o) => renderCard(o, 'orange'))}
+          </div>
+        </div>
+      </div>
+
       <OrderEditModal
         isOpen={!!editingOrder}
-        onClose={() => setEditingOrder(null)}
         order={editingOrder}
-        viewContext="MONITOR"
+        viewContext="KITCHEN"
         onStatusUpdate={handleStatusUpdate}
+        onClose={() => setEditingOrder(null)}
       />
 
-      {/* DETAILS MODAL (Double Click) */}
       <OrderDetailsModal
         isOpen={!!detailsOrder}
-        onClose={() => setDetailsOrder(null)}
         order={detailsOrder}
+        onClose={() => setDetailsOrder(null)}
       />
     </div>
   )

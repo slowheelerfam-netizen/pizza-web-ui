@@ -1,38 +1,40 @@
+import { unstable_noStore } from 'next/cache'
 import { fetchDashboardData, updateStatusAction } from '../actions'
-import ChefDisplay from '../../components/ChefDisplay'
+import ChefDisplay from '@/components/ChefDisplay'
+import { ORDER_STATUS } from '@/types/models'
 
 export const dynamic = 'force-dynamic'
 
-export default async function ChefPage() {
+export default async function KitchenPage() {
+  unstable_noStore()
+
   const data = await fetchDashboardData()
 
-  // Filter for relevant kitchen statuses
-  const kitchenOrders = data.orders.filter((order) =>
-    ['NEW', 'CONFIRMED', 'IN_PREP', 'OVEN', 'READY'].includes(order.status)
+  const safeOrders = Array.isArray(data?.orders) ? data.orders : []
+  const safeEmployees = Array.isArray(data?.employees) ? data.employees : []
+
+  /**
+   * KITCHEN VIEW CONTRACT (LOCKED)
+   * ------------------------------
+   * Chef sees FULL universe needed for progression,
+   * but is responsible ONLY for:
+   * MONITOR → OVEN
+   */
+  const kitchenOrders = safeOrders.filter(
+    (order) =>
+      order.status === ORDER_STATUS.MONITOR ||
+      order.status === ORDER_STATUS.OVEN
   )
 
   return (
     <main className="min-h-screen bg-slate-900 p-6">
-      <div className="mx-auto max-w-[1600px]">
-        <header className="mb-8 flex items-center justify-between border-b border-white/10 pb-6">
-          <h1 className="text-4xl font-black tracking-tight text-white">
-            👨‍🍳 Chef
-          </h1>
-          <div className="flex items-center gap-2 rounded-full bg-green-50 px-4 py-2 font-bold text-green-700">
-            <span className="relative flex h-3 w-3">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75"></span>
-              <span className="relative inline-flex h-3 w-3 rounded-full bg-green-500"></span>
-            </span>
-            LIVE SYSTEM
-          </div>
-        </header>
-
-        <ChefDisplay
-          initialOrders={kitchenOrders}
-          employees={data.employees}
-          updateStatusAction={updateStatusAction}
-        />
-      </div>
+      <ChefDisplay
+        orders={kitchenOrders}
+        employees={safeEmployees}
+        updateStatusAction={updateStatusAction}
+        viewContext="KITCHEN"
+      />
     </main>
   )
 }
+

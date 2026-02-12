@@ -29,10 +29,10 @@ export default function StaffScheduler({ employees: initialEmployees }) {
     const empMap = new Map()
 
     // Add server employees first
-    initialEmployees.forEach((e) => empMap.set(e.id, e))
+    initialEmployees.forEach((e) => empMap.set(e.id, { ...e, isOnDuty: Boolean(e.isOnDuty) }))
 
     // Add/Overwrite with local employees
-    localEmployees.forEach((e) => empMap.set(e.id, e))
+    localEmployees.forEach((e) => empMap.set(e.id, { ...e, isOnDuty: Boolean(e.isOnDuty) }))
 
     setTimeout(() => {
       setEmployees(Array.from(empMap.values()))
@@ -66,7 +66,7 @@ export default function StaffScheduler({ employees: initialEmployees }) {
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-bold text-gray-900">Staff Assignments</h2>
         <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-bold text-green-700 shadow-sm">
-          {employees.filter((e) => Boolean(e.isOnDuty)).length} On Duty
+          {employees.filter((e) => e.isOnDuty === true).length} On Duty
         </span>
       </div>
 

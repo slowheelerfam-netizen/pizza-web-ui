@@ -1,17 +1,13 @@
 import { PrismaClient } from '@prisma/client'
-import { DEMO_MODE } from '@/lib/appConfig'
 
-const prisma = new PrismaClient()
+const prismaClientSingleton = () => {
+  return new PrismaClient()
+}
 
-prisma.$use(async (params, next) => {
-  if (DEMO_MODE) {
-    const blockedActions = ['create', 'update', 'delete', 'upsert']
-    if (blockedActions.includes(params.action)) {
-      return null
-    }
-  }
+const globalForPrisma = globalThis
 
-  return next(params)
-})
+const prisma = globalForPrisma.prisma ?? prismaClientSingleton()
 
 export default prisma
+
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma

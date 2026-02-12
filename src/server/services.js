@@ -8,25 +8,26 @@ import { FileEmployeeRepository } from '../infrastructure/repositories/FileEmplo
 import { OrderService } from '../domain/orderService'
 
 export function createServerServices() {
-  const repositories = {
-    order: new FileOrderRepository(),
-    notification: new FileNotificationRepository(),
-    adminAction: new FileAdminActionRepository(),
-    warning: new FileWarningRepository(),
-    employee: new FileEmployeeRepository(),
-  }
+  const orderRepository = new FileOrderRepository()
+  const notificationRepository = new FileNotificationRepository()
+  const adminActionRepository = new FileAdminActionRepository()
+  const warningRepository = new FileWarningRepository()
+  const employeeRepository = new FileEmployeeRepository()
 
-  // Ensure correct argument order matching OrderService constructor:
-  // (ordersRepository, warningsRepository, adminActionRepository, notificationsRepository)
   const orderService = new OrderService(
-    repositories.order,
-    repositories.warning,
-    repositories.adminAction,
-    repositories.notification
+    orderRepository,
+    warningRepository,
+    adminActionRepository,
+    notificationRepository
   )
 
   return {
     orderService,
-    repositories,
+    orderRepository,
+    notificationRepository,
+    adminActionRepository,
+    warningRepository,
+    employeeRepository,
   }
 }
+

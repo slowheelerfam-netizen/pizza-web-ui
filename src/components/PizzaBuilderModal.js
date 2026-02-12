@@ -294,7 +294,7 @@ export default function PizzaBuilderModal({
                   onClick={handleAddToOrder}
                   className="rounded-xl bg-indigo-600 px-8 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-500/30 transition-all hover:bg-indigo-500 hover:shadow-indigo-500/40 active:scale-95"
                 >
-                  Add to Order
+                  Add Item
                 </button>
               </div>
             </div>

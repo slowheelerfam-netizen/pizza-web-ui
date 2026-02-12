@@ -51,19 +51,29 @@ export class FileWarningRepository {
     })
   }
 
+  // ✅ Added to match server action usage
+  async findActiveByPhone(phone) {
+    const all = await this._safeReadAll()
+    return all.find(
+      (w) =>
+        w.isActive !== false &&
+        w.customerIdentifier?.phone === phone
+    ) || null
+  }
+
   async findActiveByIdentifiers({ phone, name, paymentId }) {
     const all = await this._safeReadAll()
 
     return all.filter((w) => {
-      if (!w.isActive) return false
-      if (phone && w.customerIdentifier.phone === phone) return true
+      if (w.isActive === false) return false
+      if (phone && w.customerIdentifier?.phone === phone) return true
       if (
         name &&
-        w.customerIdentifier.name &&
+        w.customerIdentifier?.name &&
         w.customerIdentifier.name.toLowerCase() === name.toLowerCase()
       )
         return true
-      if (paymentId && w.customerIdentifier.paymentId === paymentId) return true
+      if (paymentId && w.customerIdentifier?.paymentId === paymentId) return true
       return false
     })
   }
@@ -72,3 +82,4 @@ export class FileWarningRepository {
     return this._safeReadAll()
   }
 }
+
