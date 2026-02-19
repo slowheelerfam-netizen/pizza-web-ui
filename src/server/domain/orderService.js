@@ -31,8 +31,7 @@ export class OrderService {
 
     const customerSnapshot = {
       customerId: null,
-      name:
-        customerName && customerName.trim() ? customerName.trim() : 'Walk-in',
+      name: customerName || null,
       phone: customerPhone || null,
       type: type || 'PICKUP',
       address: address || null,
@@ -101,9 +100,20 @@ export class OrderService {
     }
 
     if (newStatus === ORDER_STATUS.READY) {
-      await handleOrderReadiness(order, null, this.notifications)
+      await handleOrderReadiness(order, order.customerSnapshot, this.notifications)
     }
 
+    return order
+  }
+
+  async markAsPaid(orderId) {
+    const order = await this.orders.findById(orderId)
+    if (!order) throw new Error(`Order ${orderId} not found`)
+
+    order.isPaid = true
+    order.updatedAt = new Date().toISOString()
+
+    await this.orders.update(order)
     return order
   }
 

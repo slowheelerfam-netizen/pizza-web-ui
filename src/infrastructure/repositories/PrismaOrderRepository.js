@@ -1,4 +1,4 @@
-import prisma from '../../lib/prisma'
+import { prisma } from '@/lib/prisma'
 import { DEMO_MODE } from '../../lib/appConfig'
 
 export class PrismaOrderRepository {
@@ -49,10 +49,14 @@ export class PrismaOrderRepository {
         status: rest.status || 'NEW',
         source: isDemo ? 'DEMO' : rest.source || 'REGISTER',
         totalPrice: rest.totalPrice || 0,
-        customerName: isDemo ? 'Demo Customer' : customerSnapshot?.name || null,
-        customerPhone: isDemo
-          ? '000-000-0000'
-          : customerSnapshot?.phone || null,
+        customerName:
+          isDemo && !customerSnapshot?.name
+            ? 'Demo Customer'
+            : customerSnapshot?.name || null,
+        customerPhone:
+          isDemo && !customerSnapshot?.phone
+            ? '000-000-0000'
+            : customerSnapshot?.phone || null,
         customerType: customerSnapshot?.type || 'PICKUP',
         customerAddress: isDemo ? null : customerSnapshot?.address || null,
         isWalkIn: customerSnapshot?.isWalkIn ?? false,

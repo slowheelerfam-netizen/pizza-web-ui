@@ -3,35 +3,42 @@
 import { useState, useEffect } from 'react'
 import { MENU_ITEMS, PIZZA_SIZES, CRUST_TYPES, TOPPINGS } from '../types/models'
 
-const generateId = () => Date.now()
+const generateId = () => Date.now() + Math.random()
 
+// This modal is now a full "Create Order" modal
 export default function PizzaBuilderModal({
   isOpen,
   onClose,
-  onCancel,
-  onAdd,
-  initialPizza = MENU_ITEMS[0],
+  onPlaceOrder, // This prop will receive the final list of items
 }) {
-  const [selectedPizza, setSelectedPizza] = useState(initialPizza)
+  // State for the ENTIRE order being built
+  const [items, setItems] = useState([])
+
+  // State for the CURRENT pizza being configured
+  const [selectedPizza, setSelectedPizza] = useState(MENU_ITEMS[0])
   const [selectedSize, setSelectedSize] = useState(PIZZA_SIZES.MEDIUM)
   const [selectedCrust, setSelectedCrust] = useState(CRUST_TYPES.ORIGINAL)
   const [selectedToppings, setSelectedToppings] = useState(
-    new Set(initialPizza.defaultToppings)
+    new Set(MENU_ITEMS[0].defaultToppings)
   )
   const [itemNotes, setItemNotes] = useState('')
 
-  // Reset state when modal opens or initialPizza changes
+  // Reset the entire modal state when it opens
   useEffect(() => {
     if (isOpen) {
-      setTimeout(() => {
-        setSelectedPizza(initialPizza)
-        setSelectedSize(PIZZA_SIZES.MEDIUM)
-        setSelectedCrust(CRUST_TYPES.ORIGINAL)
-        setSelectedToppings(new Set(initialPizza.defaultToppings))
-        setItemNotes('')
-      }, 0)
+      setItems([])
+      resetPizzaConfigurator()
     }
-  }, [isOpen, initialPizza])
+  }, [isOpen])
+
+  const resetPizzaConfigurator = () => {
+    const defaultPizza = MENU_ITEMS[0]
+    setSelectedPizza(defaultPizza)
+    setSelectedSize(PIZZA_SIZES.MEDIUM)
+    setSelectedCrust(CRUST_TYPES.ORIGINAL)
+    setSelectedToppings(new Set(defaultPizza.defaultToppings))
+    setItemNotes('')
+  }
 
   const handlePizzaChange = (pizza) => {
     setSelectedPizza(pizza)
@@ -50,25 +57,23 @@ export default function PizzaBuilderModal({
 
   const calculatePrice = () => {
     let price = selectedPizza.basePrice
-
-    // Add topping prices
     selectedToppings.forEach((toppingId) => {
       const topping = Object.values(TOPPINGS).find((t) => t.id === toppingId)
       if (topping && !selectedPizza.defaultToppings.includes(toppingId)) {
         price += topping.price
       }
     })
-
     price += selectedCrust.price
     price *= selectedSize.priceMultiplier
-
     return parseFloat(price.toFixed(2))
   }
 
-  const currentPrice = calculatePrice()
+  const currentItemPrice = calculatePrice()
+  const totalOrderPrice = items.reduce((sum, item) => sum + item.price, 0)
 
-  const handleAddToOrder = () => {
-    const item = {
+  // Adds the currently configured pizza to the order list
+  const handleAddItemToOrder = () => {
+    const newItem = {
       id: generateId(),
       name: selectedPizza.name,
       size: selectedSize.label,
@@ -76,25 +81,34 @@ export default function PizzaBuilderModal({
       toppings: Array.from(selectedToppings).map(
         (id) => Object.values(TOPPINGS).find((t) => t.id === id)?.label
       ),
-      price: currentPrice,
+      price: currentItemPrice,
       notes: itemNotes,
       details: `${selectedSize.label} | ${selectedCrust.label}`,
+      quantity: 1,
     }
-    onAdd(item)
+    setItems([...items, newItem])
+    resetPizzaConfigurator() // Reset for next pizza
+  }
+
+  const handleRemoveItem = (itemId) => {
+    setItems(items.filter((item) => item.id !== itemId))
+  }
+
+  // Finalizes the order and moves to checkout
+  const handlePlaceOrderClick = () => {
+    if (onPlaceOrder) {
+      onPlaceOrder(items)
+    }
   }
 
   if (!isOpen) return null
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative flex h-full max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-3xl border border-white/10 bg-slate-900 shadow-2xl animate-in zoom-in-95 duration-200">
-        
-        {/* Header */}
+      <div className="relative flex h-full max-h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-3xl border border-white/10 bg-slate-900 shadow-2xl animate-in zoom-in-95 duration-200">
         <div className="flex-none border-b border-white/10 bg-slate-900 px-6 py-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-white">
-              Customize Your Pizza
-            </h2>
+            <h2 className="text-xl font-bold text-white">Create New Order</h2>
             <button
               onClick={onClose}
               className="rounded-full p-2 text-slate-400 transition-colors hover:bg-white/10 hover:text-white"
@@ -116,14 +130,13 @@ export default function PizzaBuilderModal({
           </div>
         </div>
 
-        {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent p-6">
-          <div className="space-y-8">
-            
-            {/* Pizza Selection */}
+        <div className="flex flex-1 overflow-hidden">
+          {/* Left Side: Pizza Configurator */}
+          <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent p-6">
+            <div className="space-y-8">
               <div>
                 <label className="mb-4 block text-sm font-bold uppercase tracking-wider text-slate-400">
-                  Select Base Pizza
+                  1. Select Base Pizza
                 </label>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   {MENU_ITEMS.map((pizza) => (
@@ -137,9 +150,9 @@ export default function PizzaBuilderModal({
                           : 'border-white/10 bg-white/5 hover:border-indigo-500/50 hover:bg-white/10'
                       }`}
                     >
-                      <img 
-                        src={pizza.image} 
-                        alt={pizza.name} 
+                      <img
+                        src={pizza.image}
+                        alt={pizza.name}
                         className="h-12 w-12 rounded-lg object-cover"
                       />
                       <div className="flex-1 min-w-0">
@@ -161,11 +174,10 @@ export default function PizzaBuilderModal({
                 </div>
               </div>
 
-              {/* Size & Crust */}
               <div className="grid gap-8 md:grid-cols-2">
                 <div>
                   <label className="mb-4 block text-sm font-bold uppercase tracking-wider text-slate-400">
-                    Size
+                    2. Size
                   </label>
                   <div className="flex flex-wrap gap-2">
                     {Object.values(PIZZA_SIZES).map((size) => (
@@ -187,7 +199,7 @@ export default function PizzaBuilderModal({
 
                 <div>
                   <label className="mb-4 block text-sm font-bold uppercase tracking-wider text-slate-400">
-                    Crust
+                    3. Crust
                   </label>
                   <div className="relative">
                     <select
@@ -202,24 +214,38 @@ export default function PizzaBuilderModal({
                       className="w-full appearance-none rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm font-medium text-white shadow-sm transition-colors focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                     >
                       {Object.values(CRUST_TYPES).map((crust) => (
-                        <option key={crust.id} value={crust.id} className="bg-slate-900 text-white">
-                          {crust.label} {crust.price > 0 && `(+$${crust.price})`}
+                        <option
+                          key={crust.id}
+                          value={crust.id}
+                          className="bg-slate-900 text-white"
+                        >
+                          {crust.label}{' '}
+                          {crust.price > 0 && `(+$${crust.price})`}
                         </option>
                       ))}
                     </select>
                     <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
-                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
                       </svg>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Toppings */}
               <div>
                 <label className="mb-4 flex items-center justify-between text-sm font-bold uppercase tracking-wider text-slate-400">
-                  <span>Toppings</span>
+                  <span>4. Customize Toppings</span>
                   <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs text-white">
                     {selectedToppings.size} selected
                   </span>
@@ -258,10 +284,9 @@ export default function PizzaBuilderModal({
                 </div>
               </div>
 
-              {/* Notes */}
               <div>
                 <label className="mb-4 block text-sm font-bold uppercase tracking-wider text-slate-400">
-                  Special Instructions
+                  5. Special Instructions
                 </label>
                 <textarea
                   value={itemNotes}
@@ -274,32 +299,82 @@ export default function PizzaBuilderModal({
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="flex-none border-t border-white/10 bg-slate-900/40 p-6 backdrop-blur-md">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-bold text-slate-500">Total Price</p>
-                <p className="text-3xl font-black text-white">
-                  ${currentPrice.toFixed(2)}
-                </p>
-              </div>
-              <div className="flex gap-4">
-                <button
-                  onClick={onCancel || onClose}
-                  className="rounded-xl border border-white/10 bg-white/5 px-6 py-3 text-sm font-bold text-white transition-all hover:bg-white/10"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleAddToOrder}
-                  className="rounded-xl bg-indigo-600 px-8 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-500/30 transition-all hover:bg-indigo-500 hover:shadow-indigo-500/40 active:scale-95"
-                >
-                  Add Item
-                </button>
+          {/* Right Side: Order Summary */}
+          <div className="flex w-96 flex-col border-l border-white/10 bg-black/20">
+            <div className="flex-1 overflow-y-auto p-6">
+              <h3 className="text-lg font-bold text-white">Current Order</h3>
+              {items.length === 0 ? (
+                <div className="flex h-full items-center justify-center text-center text-slate-500">
+                  <p>
+                    Your order is empty. <br /> Configure a pizza on the left
+                    and click "Add to Order".
+                  </p>
+                </div>
+              ) : (
+                <ul className="mt-4 space-y-3">
+                  {items.map((item) => (
+                    <li
+                      key={item.id}
+                      className="flex items-start justify-between rounded-lg bg-white/5 p-3"
+                    >
+                      <div>
+                        <p className="font-bold text-slate-200">{item.name}</p>
+                        <p className="text-xs text-slate-400">
+                          {item.details}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-white">
+                          ${item.price.toFixed(2)}
+                        </p>
+                        <button
+                          onClick={() => handleRemoveItem(item.id)}
+                          className="text-xs text-red-400 hover:text-red-300"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <div className="flex-none border-t border-white/10 bg-slate-900/40 p-6 backdrop-blur-md">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-bold text-slate-500">
+                      Item Price
+                    </p>
+                    <p className="text-2xl font-black text-white">
+                      ${currentItemPrice.toFixed(2)}
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleAddItemToOrder}
+                    className="rounded-xl bg-indigo-600 px-8 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-500/30 transition-all hover:bg-indigo-500 active:scale-95"
+                  >
+                    + Add to Order
+                  </button>
+                </div>
+                <div className="border-t border-white/10 pt-4">
+                  <div className="flex justify-between font-bold text-white">
+                    <span>Order Total</span>
+                    <span>${totalOrderPrice.toFixed(2)}</span>
+                  </div>
+                  <button
+                    onClick={handlePlaceOrderClick}
+                    disabled={items.length === 0}
+                    className="mt-4 w-full rounded-xl bg-green-600 px-8 py-3 text-sm font-bold text-white shadow-lg shadow-green-500/30 transition-all hover:bg-green-500 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Place Order ({items.length} items)
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
     </div>
   )
 }

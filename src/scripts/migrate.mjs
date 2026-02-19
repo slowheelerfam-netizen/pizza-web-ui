@@ -12,9 +12,7 @@ const __dirname = path.dirname(__filename)
 // Load env from project root
 dotenv.config({ path: path.join(__dirname, '../../.env') })
 
-const prisma = new PrismaClient({
-  log: ['info', 'warn', 'error'],
-})
+
 
 const DATA_DIR = path.join(__dirname, '../data')
 
