@@ -13,6 +13,8 @@ model Order {
 
   // Lifecycle state (string-based for SQLite)
   status          String   @default("NEW") 
+  paymentMethod   String   @default("PREPAID")
+  isPaid          Boolean  @default(false)
   source          String   @default("REGISTER")
 
   totalPrice      Float

@@ -5,6 +5,7 @@ import {
   createOrderAction,
   checkCustomerWarningAction,
   markOrderAsPaidAction,
+  fetchDashboardData,
 } from '../actions'
 import PublicOrderInterface from '@/components/PublicOrderInterface'
 
@@ -24,6 +25,7 @@ export default async function RegisterPage() {
       updateStatusAction={updateStatusAction}
       checkCustomerWarningAction={checkCustomerWarningAction}
       markOrderAsPaidAction={markOrderAsPaidAction}
+      isRegisterView={true}
     />
   )
 }

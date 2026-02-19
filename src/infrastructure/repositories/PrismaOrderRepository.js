@@ -47,6 +47,8 @@ export class PrismaOrderRepository {
         ...(id && { id }),
         displayId: rest.displayId,
         status: rest.status || 'NEW',
+        paymentMethod: rest.paymentMethod || 'PREPAID',
+        isPaid: rest.isPaid || false,
         source: isDemo ? 'DEMO' : rest.source || 'REGISTER',
         totalPrice: rest.totalPrice || 0,
         customerName:
@@ -86,6 +88,7 @@ export class PrismaOrderRepository {
     // Only update fields that exist in the Order object and schema
     const dataToUpdate = {
       status: order.status,
+      isPaid: order.isPaid,
       totalPrice: order.totalPrice,
       updatedAt: new Date(),
       assignedTo: order.assignedTo, // Ensure assignedTo is persisted
@@ -170,6 +173,8 @@ export class PrismaOrderRepository {
       id: prismaOrder.id,
       displayId: prismaOrder.displayId,
       status: prismaOrder.status,
+      paymentMethod: prismaOrder.paymentMethod,
+      isPaid: prismaOrder.isPaid,
       source: prismaOrder.source,
       totalPrice: prismaOrder.totalPrice,
       createdAt: prismaOrder.createdAt.toISOString(),

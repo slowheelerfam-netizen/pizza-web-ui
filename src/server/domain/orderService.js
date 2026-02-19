@@ -27,6 +27,7 @@ export class OrderService {
       source,
       items,
       totalPrice,
+      paymentMethod,
     } = input
 
     const customerSnapshot = {
@@ -54,6 +55,8 @@ export class OrderService {
       id: crypto.randomUUID(),
       displayId: nextDisplayId,
       status: ORDER_STATUS.NEW,
+      paymentMethod: paymentMethod || 'PREPAID',
+      isPaid: paymentMethod !== 'PAY_AT_REGISTER',
       assumeChefRole: input.assumeChefRole || false,
       source: source || 'REGISTER',
       items,

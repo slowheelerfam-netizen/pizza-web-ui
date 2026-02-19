@@ -20,9 +20,26 @@ export async function createOrderAction(_, formData) {
     totalPrice: Number(formData.get('totalPrice') || 0),
     source: 'REGISTER',
     specialInstructions: formData.get('specialInstructions'),
+    paymentMethod: formData.get('paymentMethod'),
   }
 
   const order = await orderService.createOrder(input)
+
+  revalidatePath('/')
+  revalidatePath('/register')
+  revalidatePath('/kitchen')
+  revalidatePath('/monitor')
+  revalidatePath('/oven')
+
+  return { success: true, order }
+}
+
+export async function markOrderAsPaidAction(orderId) {
+  unstable_noStore()
+
+  const { orderService } = createServerServices()
+
+  const order = await orderService.markAsPaid(orderId)
 
   revalidatePath('/')
   revalidatePath('/register')
@@ -40,6 +57,7 @@ export async function updateStatusAction(orderId, status, assignedTo = null) {
 
   const order = await orderService.updateStatus(orderId, status, assignedTo)
 
+  revalidatePath('/')
   revalidatePath('/register')
   revalidatePath('/kitchen')
   revalidatePath('/oven')
@@ -55,6 +73,7 @@ export async function updateOrderDetailsAction(orderId, updates) {
 
   const order = await orderService.updateOrderDetails(orderId, updates)
 
+  revalidatePath('/')
   revalidatePath('/register')
   revalidatePath('/kitchen')
   revalidatePath('/oven')

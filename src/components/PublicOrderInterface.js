@@ -3,18 +3,25 @@
 import { useState, useEffect, useOptimistic, startTransition } from 'react'
 import { MENU_ITEMS } from '../types/models'
 import PizzaBuilderModal from './PizzaBuilderModal'
+import OrderDetailModal from './OrderDetailModal' // Import the new modal
 
 export default function PublicOrderInterface({
   initialOrders = [],
   employees = [],
   updateStatusAction,
   createOrderAction, // Passed from server component
+  markOrderAsPaidAction,
+  isRegisterView = false, // Add a prop to identify the Register page view
 }) {
   const [cart, setCart] = useState([])
   const [isBuilderOpen, setIsBuilderOpen] = useState(false)
   const [selectedPizzaForBuilder, setSelectedPizzaForBuilder] = useState(
     MENU_ITEMS[0]
   )
+
+  // State for the new Order Detail Modal
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
+  const [selectedOrder, setSelectedOrder] = useState(null)
 
   // Optimistic UI for Orders
   const [optimisticOrders, addOptimisticOrder] = useOptimistic(
@@ -46,7 +53,7 @@ export default function PublicOrderInterface({
   const [customerName, setCustomerName] = useState('')
   const [customerPhone, setCustomerPhone] = useState('')
   const [address, setAddress] = useState('')
-  const [orderType, setOrderType] = useState('PICKUP')
+  const [paymentMethod, setPaymentMethod] = useState('PREPAID')
   const [specialInstructions, setSpecialInstructions] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [orderResult, setOrderResult] = useState(null)
@@ -80,7 +87,12 @@ export default function PublicOrderInterface({
         key={order.id}
         className={`mb-3 rounded-lg border bg-white p-3 shadow-sm transition-all ${
           isNew ? 'border-l-4 border-l-blue-500' : ''
+        } ${
+          isRegisterView
+            ? 'cursor-pointer'
+            : ''
         }`}
+        onDoubleClick={() => isRegisterView && handleCardClick(order)}
       >
         <div className="flex items-start justify-between">
           <div className="">
@@ -111,22 +123,6 @@ export default function PublicOrderInterface({
             {/* Action Button based on column */}
             {(columnType === 'PREP' || columnType === 'NEW') && (
               <>
-                <div className="flex gap-1">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      if (
-                        !confirm('Are you sure you want to cancel this order?')
-                      )
-                        return
-                      handleStatusChange(order.id, 'CANCELLED')
-                    }}
-                    className="rounded bg-red-100 px-2 py-1 text-xs font-bold text-red-600 hover:bg-red-200"
-                  >
-                    ✕
-                  </button>
-                </div>
-
                 {order.status === 'NEW' ? (
                   <button
                     onClick={(e) => {
@@ -159,40 +155,83 @@ export default function PublicOrderInterface({
               </button>
             )}
             {columnType === 'READY' && (
-              <button
-                onClick={() => handleStatusChange(order.id, 'COMPLETED')}
-                className="rounded bg-gray-100 px-2 py-1 text-xs font-bold text-gray-700 hover:bg-gray-200"
-              >
-                COMPLETE Order
-              </button>
-            )}
-          </div>
-        </div>
+        <div className="flex flex-col items-end gap-2">
+          {/* For any unpaid order in READY, show Collect Payment button */}
+          {!order.isPaid && (
+            <button
+              onClick={() => handleMarkAsPaid(order.id)}
+              className="w-full rounded bg-pink-600 px-2 py-1 text-xs font-bold text-white shadow-sm hover:bg-pink-700"
+            >
+              Collect Payment
+            </button>
+          )}
 
-        {/* Order Items Summary */}
-        <div className="mt-2 border-t pt-2">
-          {order.items.map((item, idx) => (
-            <div key={idx} className="text-xs text-gray-600">
-              {item.quantity}x {item.name}
-            </div>
-          ))}
+          {/* Complete Order button is disabled if payment is not made */}
+          <button
+            onClick={() => handleStatusChange(order.id, 'COMPLETED')}
+            disabled={!order.isPaid}
+            className="w-full rounded bg-gray-100 px-2 py-1 text-xs font-bold text-gray-700 hover:bg-gray-200 disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400 disabled:opacity-60"
+          >
+            COMPLETE Order
+          </button>
         </div>
+      )}
+    </div>
+  </div>
+
+  {/* Order Items Summary */}
+  <div className="mt-2 border-t pt-2">
+    {order.items.map((item, idx) => (
+      <div key={idx} className="text-xs text-gray-600">
+        {item.quantity}x {item.name}
       </div>
-    )
-  }
+    ))}
+  </div>
+</div>
+)
+}
 
-  const handleStatusChange = async (orderId, newStatus) => {
-    startTransition(() => {
-      addOptimisticOrder({ id: orderId, status: newStatus })
-    })
-    if (updateStatusAction) {
-      await updateStatusAction(orderId, newStatus)
+const handleMarkAsPaid = async (orderId) => {
+startTransition(() => {
+  addOptimisticOrder({ id: orderId, isPaid: true })
+})
+if (markOrderAsPaidAction) {
+  await markOrderAsPaidAction(orderId)
+}
+}
+
+const handleStatusChange = async (orderId, newStatus) => {
+startTransition(() => {
+addOptimisticOrder({ id: orderId, status: newStatus })
+})
+if (updateStatusAction) {
+await updateStatusAction(orderId, newStatus)
+}
+}
+
+  const handleCardClick = (order) => {
+    if (isRegisterView) {
+      setSelectedOrder(order)
+      setIsDetailModalOpen(true)
     }
   }
 
+  const handleCloseDetailModal = () => {
+    setIsDetailModalOpen(false)
+    setSelectedOrder(null)
+  }
+
+  const handleCancelOrder = (orderId) => {
+    if (!confirm('Are you sure you want to permanently cancel this order?'))
+      return
+
+    handleStatusChange(orderId, 'CANCELLED')
+    handleCloseDetailModal()
+  }
 
 
-  // Handle placing the order from the modal
+
+// Handle placing the order from the modal
   const handlePlaceOrder = (items) => {
     setCart(items)
     setIsBuilderOpen(false)
@@ -204,8 +243,6 @@ export default function PublicOrderInterface({
   const handleCheckoutSubmit = async (e) => {
     e.preventDefault()
     setIsSubmitting(true)
-
-    const isPayingLater = orderType === 'PAY_LATER'
 
     // Prepare data
     const customerSnapshot = {
@@ -227,9 +264,9 @@ export default function PublicOrderInterface({
     formData.append('items', JSON.stringify(cart))
     formData.append('totalPrice', cartTotal.toString())
     formData.append('specialInstructions', specialInstructions)
+    formData.append('paymentMethod', paymentMethod)
 
     if (createOrderAction) {
-      // The isPaid status is now handled by the server action, so we don't send it from the client.
       result = await createOrderAction(null, formData)
     } else {
       console.warn('No createOrderAction provided')
@@ -239,11 +276,9 @@ export default function PublicOrderInterface({
     setIsSubmitting(false)
 
     if (result.success && result.order) {
-      // THIS IS THE FIX: Add the newly created order to the optimistic state
+      // Add the newly created order to the optimistic state
       startTransition(() => {
-        // Manually add the isPaid status to the optimistic update
-        const optimisticOrder = { ...result.order, isPaid: !isPayingLater }
-        addOptimisticOrder(optimisticOrder)
+        addOptimisticOrder(result.order)
       })
 
       // Now, reset the form and close the checkout modal
@@ -251,9 +286,8 @@ export default function PublicOrderInterface({
       setCustomerName('')
       setCustomerPhone('')
       setAddress('')
-      setOrderType('PICKUP')
+      setPaymentMethod('PREPAID')
       setSpecialInstructions('')
-      // setEditingOrderId(null) // Removed
       setIsCheckoutMode(false)
       // Close success message after 3s
       setTimeout(() => setOrderResult(null), 3000)
@@ -301,30 +335,30 @@ export default function PublicOrderInterface({
 
               <div>
                 <label className="mb-1 block text-sm font-extrabold text-black">
-                  Order Type
+                  Payment
                 </label>
                 <div className="flex gap-4">
                   <label className="flex items-center gap-2 font-bold text-black">
                     <input
                       type="radio"
-                      name="type"
-                      value="PICKUP"
-                      checked={orderType === 'PICKUP'}
-                      onChange={(e) => setOrderType(e.target.value)}
+                      name="paymentMethod"
+                      value="PREPAID"
+                      checked={paymentMethod === 'PREPAID'}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
                       className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
                     />
-                    <span>Pickup</span>
+                    <span>Pre-paid</span>
                   </label>
                   <label className="flex items-center gap-2 font-bold text-black">
                     <input
                       type="radio"
-                      name="type"
-                      value="DINE_IN"
-                      checked={orderType === 'DINE_IN'}
-                      onChange={(e) => setOrderType(e.target.value)}
+                      name="paymentMethod"
+                      value="PAY_AT_REGISTER"
+                      checked={paymentMethod === 'PAY_AT_REGISTER'}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
                       className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
                     />
-                    <span>Dine-in</span>
+                    <span>Collect Payment</span>
                   </label>
                 </div>
               </div>
@@ -374,7 +408,7 @@ export default function PublicOrderInterface({
                   setCustomerName('')
                   setCustomerPhone('')
                   setAddress('')
-                  setOrderType('PICKUP')
+                  setPaymentMethod('PREPAID')
                   setSpecialInstructions('')
                   setIsCheckoutMode(false)
                 }}
@@ -502,6 +536,16 @@ export default function PublicOrderInterface({
           isOpen={isBuilderOpen}
           onClose={() => setIsBuilderOpen(false)}
           onPlaceOrder={handlePlaceOrder}
+        />
+      )}
+
+      {isRegisterView && (
+        <OrderDetailModal
+          isOpen={isDetailModalOpen}
+          order={selectedOrder}
+          onClose={handleCloseDetailModal}
+          onCancelOrder={handleCancelOrder}
+          isRegisterView={isRegisterView}
         />
       )}
     </div>
