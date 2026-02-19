@@ -1358,5 +1358,25 @@
     "status": "SENT",
     "message": "Hello CollectOrder, your order is READY!",
     "sentAt": "2026-02-19T23:13:48.490Z"
+  },
+  {
+    "id": "60d54dd1-1e98-4fe9-9c9b-f023a9204f3f",
+    "orderId": "f48a1660-b366-404c-b045-2cf8d5724459",
+    "customerName": "Rob",
+    "phone": "2435345768",
+    "type": "SMS",
+    "status": "SENT",
+    "message": "Hello Rob, your pizza will be ready in approximately 10 minutes.",
+    "sentAt": "2026-02-19T23:20:44.836Z"
+  },
+  {
+    "id": "eee0046e-a5cd-4f3f-93a0-8cb9ceb791d4",
+    "orderId": "f48a1660-b366-404c-b045-2cf8d5724459",
+    "customerName": "Rob",
+    "phone": "2435345768",
+    "type": "SMS",
+    "status": "SENT",
+    "message": "Hello Rob, your order is READY!",
+    "sentAt": "2026-02-19T23:20:45.836Z"
   }
 ]

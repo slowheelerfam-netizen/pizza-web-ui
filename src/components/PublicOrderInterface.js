@@ -61,21 +61,25 @@ export default function PublicOrderInterface({
   // Auto-refresh logic could be added here or rely on Next.js router refresh
   // For now, we rely on initialOrders prop updates (from parent re-renders)
 
-  // Filter Orders for Dashboard (Use optimisticOrders instead of initialOrders)
+  const activeOrders = optimisticOrders.filter(
+    (o) => o.status !== 'COMPLETED' && o.status !== 'CANCELLED'
+  )
+
+  // Filter Orders for Dashboard (Use activeOrders instead of optimisticOrders)
   // Split Column 1 into NEW and PREP for better visual feedback
-  const newOrders = optimisticOrders
+  const newOrders = activeOrders
     .filter((o) => o.status === 'NEW' && isRegisterView)
     .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
 
-  const activePrepOrders = optimisticOrders
+  const activePrepOrders = activeOrders
     .filter((o) => o.status === 'PREP')
     .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
 
-  const ovenOrders = optimisticOrders
+  const ovenOrders = activeOrders
     .filter((o) => o.status === 'OVEN')
     .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
 
-  const readyOrders = optimisticOrders
+  const readyOrders = activeOrders
     .filter((o) => o.status === 'READY')
     .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
 
