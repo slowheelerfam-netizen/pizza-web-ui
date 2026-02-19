@@ -64,7 +64,7 @@ export default function PublicOrderInterface({
   // Filter Orders for Dashboard (Use optimisticOrders instead of initialOrders)
   // Split Column 1 into NEW and PREP for better visual feedback
   const newOrders = optimisticOrders
-    .filter((o) => o.status === 'NEW')
+    .filter((o) => o.status === 'NEW' && isRegisterView)
     .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
 
   const activePrepOrders = optimisticOrders
@@ -99,6 +99,11 @@ export default function PublicOrderInterface({
             <div className="text-lg font-bold text-gray-900">
               {order.customerSnapshot?.name || 'Guest'}
             </div>
+            {order.source && (
+              <div className="text-xs font-semibold uppercase tracking-wider text-indigo-600">
+                {order.source}
+              </div>
+            )}
             <div className="text-sm font-black text-gray-800">
               {order.customerSnapshot?.phone || 'No Phone'}
             </div>
@@ -120,63 +125,68 @@ export default function PublicOrderInterface({
             <span className="mb-1 block text-xs font-bold text-gray-400">
               {order.customerSnapshot?.type}
             </span>
-            {/* Action Button based on column */}
-            {(columnType === 'PREP' || columnType === 'NEW') && (
-              <>
-                {order.status === 'NEW' ? (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleStatusChange(order.id, 'PREP')
-                    }}
-                    className="rounded bg-blue-100 px-2 py-1 text-xs font-bold text-blue-700 hover:bg-blue-200"
-                  >
-                    Start Prep
-                  </button>
+
+            {isRegisterView && (
+              <div className="h-9">
+                {order.isPaid ? (
+                  <span className="mb-2 inline-block w-full rounded bg-green-100 px-2 py-1 text-center text-xs font-bold text-green-800">
+                    PAID
+                  </span>
                 ) : (
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleStatusChange(order.id, 'OVEN')
-                    }}
-                    className="rounded bg-orange-100 px-2 py-1 text-xs font-bold text-orange-700 hover:bg-orange-200"
+                    onClick={() => handleMarkAsPaid(order.id)}
+                    disabled={order.status !== 'READY'}
+                    className="mb-2 w-full rounded bg-pink-600 px-2 py-1 text-xs font-bold text-white shadow-sm hover:bg-pink-700 disabled:cursor-not-allowed disabled:bg-gray-400 disabled:opacity-50"
                   >
-                    Send to OVEN
+                    Collect Payment
                   </button>
                 )}
-              </>
+              </div>
             )}
-            {columnType === 'OVEN' && (
+
+            {/* Action Button based on status */}
+            {order.status === 'NEW' && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleStatusChange(order.id, 'PREP')
+                }}
+                className="rounded bg-blue-100 px-2 py-1 text-xs font-bold text-blue-700 hover:bg-blue-200"
+              >
+                Start Prep
+              </button>
+            )}
+            {order.status === 'PREP' && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleStatusChange(order.id, 'OVEN')
+                }}
+                className="rounded bg-orange-100 px-2 py-1 text-xs font-bold text-orange-700 hover:bg-orange-200"
+              >
+                Send to OVEN
+              </button>
+            )}
+            {order.status === 'OVEN' && (
               <button
                 onClick={() => handleStatusChange(order.id, 'READY')}
                 className="rounded bg-green-100 px-2 py-1 text-xs font-bold text-green-700 hover:bg-green-200"
               >
-                Start BOXING
+                Send to BOXING
               </button>
             )}
-            {columnType === 'READY' && (
-        <div className="flex flex-col items-end gap-2">
-          {/* For any unpaid order in READY, show Collect Payment button */}
-          {!order.isPaid && (
-            <button
-              onClick={() => handleMarkAsPaid(order.id)}
-              className="w-full rounded bg-pink-600 px-2 py-1 text-xs font-bold text-white shadow-sm hover:bg-pink-700"
-            >
-              Collect Payment
-            </button>
-          )}
-
-          {/* Complete Order button is disabled if payment is not made */}
-          <button
-            onClick={() => handleStatusChange(order.id, 'COMPLETED')}
-            disabled={!order.isPaid}
-            className="w-full rounded bg-gray-100 px-2 py-1 text-xs font-bold text-gray-700 hover:bg-gray-200 disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400 disabled:opacity-60"
-          >
-            COMPLETE Order
-          </button>
-        </div>
-      )}
-    </div>
+            {order.status === 'READY' && (
+              <div className="flex flex-col items-end gap-2">
+                <button
+                  onClick={() => handleStatusChange(order.id, 'COMPLETED')}
+                  disabled={!order.isPaid}
+                  className="w-full rounded bg-gray-100 px-2 py-1 text-xs font-bold text-gray-700 hover:bg-gray-200 disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400 disabled:opacity-60"
+                >
+                  COMPLETE Order
+                </button>
+              </div>
+            )}
+          </div>
   </div>
 
   {/* Order Items Summary */}
@@ -535,7 +545,7 @@ await updateStatusAction(orderId, newStatus)
         <PizzaBuilderModal
           isOpen={isBuilderOpen}
           onClose={() => setIsBuilderOpen(false)}
-          onPlaceOrder={handlePlaceOrder}
+          onAddToCart={(item) => handlePlaceOrder([item])}
         />
       )}
 

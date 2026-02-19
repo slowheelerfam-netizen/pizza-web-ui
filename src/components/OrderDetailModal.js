@@ -73,11 +73,18 @@ export default function OrderDetailModal({
                   order.isPaid ? 'text-green-600' : 'text-red-600'
                 }`}
               >
-                {order.isPaid ? 'PAID' : 'UNPAID'} (
-                {order.paymentMethod === 'PAY_AT_REGISTER'
-                  ? 'Pay at Register'
-                  : 'Pre-paid'}
-                )
+                {order.isPaid ? (
+                  'PAID'
+                ) : (
+                  <span className="text-red-600">UNPAID</span>
+                )}{' '}
+                <span className="text-xs text-gray-500">
+                  (
+                  {order.paymentMethod === 'PAY_AT_REGISTER'
+                    ? 'Pay at Register'
+                    : 'Pre-paid'}
+                  )
+                </span>
               </p>
             </div>
           </div>

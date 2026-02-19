@@ -21,6 +21,7 @@ export async function createOrderAction(_, formData) {
     source: 'REGISTER',
     specialInstructions: formData.get('specialInstructions'),
     paymentMethod: formData.get('paymentMethod'),
+    isPaid: formData.get('paymentMethod') !== 'PAY_AT_REGISTER',
   }
 
   const order = await orderService.createOrder(input)
@@ -66,21 +67,7 @@ export async function updateStatusAction(orderId, status, assignedTo = null) {
   return { success: true, order }
 }
 
-export async function updateOrderDetailsAction(orderId, updates) {
-  unstable_noStore()
 
-  const { orderService } = createServerServices()
-
-  const order = await orderService.updateOrderDetails(orderId, updates)
-
-  revalidatePath('/')
-  revalidatePath('/register')
-  revalidatePath('/kitchen')
-  revalidatePath('/oven')
-  revalidatePath('/monitor')
-
-  return { success: true, order }
-}
 
 export async function checkCustomerWarningAction(phone) {
   unstable_noStore()
@@ -99,26 +86,10 @@ export async function fetchDashboardData() {
   const { repositories } = createServerServices()
 
   const [orders, warnings, employees] = await Promise.all([
-    repositories.order.getAll(),
+    repositories.order.getAll({ status: { not: 'COMPLETED' } }),
     repositories.warning.getAll(),
     repositories.employee.getAll(),
   ])
 
   return { orders, warnings, employees }
-}
-
-export async function addEmployeeAction() {
-  return { ok: true }
-}
-
-export async function toggleEmployeeDutyAction() {
-  return { ok: true }
-}
-
-export async function deleteEmployeeAction() {
-  return { ok: true }
-}
-
-export async function addWarningAction() {
-  return { ok: true }
 }

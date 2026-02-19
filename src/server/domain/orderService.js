@@ -51,6 +51,7 @@ export class OrderService {
 
     const nextDisplayId = lastOrder ? (lastOrder.displayId % 50) + 1 : 1
 
+
     const order = {
       id: crypto.randomUUID(),
       displayId: nextDisplayId,

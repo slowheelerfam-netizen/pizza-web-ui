@@ -1,43 +1,30 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { PIZZA_SIZES, CRUST_TYPES, TOPPINGS, MENU_ITEMS } from '../types/models'
+import { PIZZA_SIZES, CRUST_TYPES, TOPPINGS } from '../types/models'
 
 // This modal is for configuring a single pizza and adding it to the cart.
 export default function PizzaBuilderModal({
   isOpen,
   onClose,
   onAddToCart, // Renamed from onPlaceOrder
-  pizza: initialPizza, // The base pizza to configure
+  pizza, // The base pizza to configure
 }) {
-  const customPizza = {
-    name: 'Custom Pizza',
-    basePrice: 10.99,
-    defaultToppings: [],
-  }
-
-  const [pizza, setPizza] = useState(initialPizza || customPizza)
-
   // State for the CURRENT pizza being configured
   const [selectedSize, setSelectedSize] = useState(PIZZA_SIZES.MEDIUM)
   const [selectedCrust, setSelectedCrust] = useState(CRUST_TYPES.ORIGINAL)
   const [selectedToppings, setSelectedToppings] = useState(new Set())
   const [itemNotes, setItemNotes] = useState('')
 
+  // When the modal opens or the pizza prop changes, reset the state
   useEffect(() => {
-    if (isOpen) {
-      // When the modal is opened, reset the state based on the initial pizza
-      setPizza(initialPizza || customPizza)
+    if (isOpen && pizza) {
       setSelectedSize(PIZZA_SIZES.MEDIUM)
       setSelectedCrust(CRUST_TYPES.ORIGINAL)
+      setSelectedToppings(new Set(pizza.defaultToppings))
       setItemNotes('')
     }
-  }, [isOpen, initialPizza])
-
-  // When the selected pizza changes (e.g., user clicks a preset), update toppings
-  useEffect(() => {
-    setSelectedToppings(new Set(pizza.defaultToppings))
-  }, [pizza])
+  }, [isOpen, pizza])
 
   const toggleTopping = (toppingId) => {
     const newToppings = new Set(selectedToppings)
@@ -112,33 +99,6 @@ export default function PizzaBuilderModal({
                 />
               </svg>
             </button>
-          </div>
-        </div>
-
-        {/* Pizza Selection Buttons */}
-        <div className="flex-none border-b border-white/10 p-4">
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => setPizza(customPizza)}
-              className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all ${
-                pizza.name === 'Custom Pizza'
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-white/5 text-slate-300 hover:bg-white/10'
-              }`}>
-              Build Your Own
-            </button>
-            {MENU_ITEMS.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setPizza(item)}
-                className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all ${
-                  pizza.id === item.id
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-white/5 text-slate-300 hover:bg-white/10'
-                }`}>
-                {item.name}
-              </button>
-            ))}
           </div>
         </div>
 
@@ -221,6 +181,7 @@ export default function PizzaBuilderModal({
                   {selectedToppings.size} selected
                 </span>
               </label>
+              <p className="text-slate-400 text-xs mb-4">Designed pizzas all have unique spices</p>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 {Object.values(TOPPINGS).map((topping) => {
                   const isSelected = selectedToppings.has(topping.id)
