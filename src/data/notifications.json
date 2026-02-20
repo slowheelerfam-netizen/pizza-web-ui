@@ -1378,5 +1378,65 @@
     "status": "SENT",
     "message": "Hello Rob, your order is READY!",
     "sentAt": "2026-02-19T23:20:45.836Z"
+  },
+  {
+    "id": "73c160df-fa8d-407d-a81d-679dc5ac3add",
+    "orderId": "dfd4876f-4346-4084-993c-6ca1f89d6e9a",
+    "customerName": "wer",
+    "phone": "3434343434",
+    "type": "SMS",
+    "status": "SENT",
+    "message": "Hello wer, your pizza will be ready in approximately 10 minutes.",
+    "sentAt": "2026-02-20T17:47:25.959Z"
+  },
+  {
+    "id": "7dd9d4cd-da84-4630-8932-d76551311cc0",
+    "orderId": "dfd4876f-4346-4084-993c-6ca1f89d6e9a",
+    "customerName": "wer",
+    "phone": "3434343434",
+    "type": "SMS",
+    "status": "SENT",
+    "message": "Hello wer, your order is READY!",
+    "sentAt": "2026-02-20T17:47:29.464Z"
+  },
+  {
+    "id": "85116028-d4bd-40bb-89bd-bb26fb48e041",
+    "orderId": "efb4a51a-7250-45c5-ac04-3fb5219701aa",
+    "customerName": "uer",
+    "phone": "rrrrrrrrrr",
+    "type": "SMS",
+    "status": "SENT",
+    "message": "Hello uer, your pizza will be ready in approximately 10 minutes.",
+    "sentAt": "2026-02-20T17:47:33.329Z"
+  },
+  {
+    "id": "43c4e6ec-254b-4667-b625-882af84a89c1",
+    "orderId": "efb4a51a-7250-45c5-ac04-3fb5219701aa",
+    "customerName": "uer",
+    "phone": "rrrrrrrrrr",
+    "type": "SMS",
+    "status": "SENT",
+    "message": "Hello uer, your order is READY!",
+    "sentAt": "2026-02-20T17:47:34.991Z"
+  },
+  {
+    "id": "ffdf0f4b-5d08-439c-881f-38221469e0c4",
+    "orderId": "f3f32bfb-a647-425f-9bb9-bb69be7f3321",
+    "customerName": "wer",
+    "phone": "4545454545",
+    "type": "SMS",
+    "status": "SENT",
+    "message": "Hello wer, your pizza will be ready in approximately 10 minutes.",
+    "sentAt": "2026-02-20T17:48:16.718Z"
+  },
+  {
+    "id": "c35a03ad-c64b-4f4e-833c-b30cb26cc228",
+    "orderId": "f3f32bfb-a647-425f-9bb9-bb69be7f3321",
+    "customerName": "wer",
+    "phone": "4545454545",
+    "type": "SMS",
+    "status": "SENT",
+    "message": "Hello wer, your order is READY!",
+    "sentAt": "2026-02-20T17:48:18.162Z"
   }
 ]
