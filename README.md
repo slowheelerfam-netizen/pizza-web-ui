@@ -1,71 +1,102 @@
-# Pizza Project
+# Krusty Pizzeria - Full-Stack Pizza Restaurant POS & Ordering System
 
-## Project Architecture
+This is a comprehensive, full-stack web application designed to simulate a real-world pizza restaurant's ordering and kitchen management system. It features a public-facing interface for customers to browse the menu and place orders, as well as internal views for staff to manage orders from the register and the kitchen.
 
-This project follows a **Clean Architecture** (Layered Architecture) pattern to ensure separation of concerns and maintainability.
-
-### Core Layers
-
-- **Domain Layer** (`src/domain`): Contains the core business logic and entities (e.g., `OrderService`, `orderState`). This layer is framework-independent.
-- **Infrastructure Layer** (`src/infrastructure`): Handles data persistence and external services. It implements the repositories defined by the domain requirements (e.g., `FileOrderRepository`).
-- **Presentation Layer** (`src/app`): Built with Next.js App Router. It handles API routes and UI components, interacting with the domain layer.
-
-### Data Persistence
-
-The project uses a **File-based Database** system located in `src/data/`.
-
-- Data is stored in JSON files (`orders.json`, `notifications.json`, etc.).
-- The `FileOrderRepository` handles read/write operations with a locking mechanism to prevent race conditions.
-
-## Project Structure
-
-```
-src/
-├── app/              # Next.js App Router (Presentation Layer)
-│   ├── api/          # API Routes (Admin, Orders)
-│   └── components/   # React UI Components
-├── domain/           # Business Logic (Pure JS, Framework Independent)
-├── infrastructure/   # Data Access (Repositories)
-├── data/             # JSON Storage (Database)
-├── types/            # JSDoc Types & Models
-└── lib/              # Shared Utilities
-```
+**Live Demo:** [Link to your Vercel deployment]
 
 ---
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+## Key Features
+
+*   **Public-Facing Customer Interface:**
+    *   **Interactive Menu:** A visually appealing and interactive menu where customers can see available pizzas.
+    *   **Dynamic Pizza Builder:** Customers can build a custom pizza from scratch or select a pre-designed pizza and customize its toppings.
+    *   **Real-Time Price Calculation:** The total price updates instantly as toppings are added or removed.
+    *   **Online Ordering & Checkout:** A streamlined checkout process allows customers to place orders for pickup, providing their name and phone number.
+    *   **Multiple Payment Options:** Supports mock payments via "Credit Card," "Google Pay," "Apple Pay," and "Cash at Register."
+
+*   **Internal Staff Interfaces:**
+    *   **Register View (`/`):** Displays all active orders, allows staff to create new "walk-in" orders, and provides the ability to mark cash orders as "Paid" upon payment collection.
+    *   **Kitchen View (`/kitchen`):** A real-time dashboard for kitchen staff to track and manage the lifecycle of an order.
+    *   **Order Progression:** Staff can advance an order through multiple statuses: `PREP` -> `OVEN` -> `BOXING` -> `READY`.
+    *   **Kitchen Monitor (`/monitor`):** A dedicated, auto-refreshing display showing only orders currently in the `PREP` and `OVEN` stages, designed for at-a-glance viewing in the kitchen.
+    *   **Order Archiving:** Completed orders are automatically hidden from the active dashboards to keep the interface clean.
+
+## Tech Stack
+
+This project was built with a modern, robust, and scalable technology stack, demonstrating proficiency in full-stack development.
+
+*   **Framework:** **Next.js 14** (App Router)
+*   **Language:** **JavaScript**
+*   **Styling:** **Tailwind CSS**
+*   **Database ORM:** **Prisma**
+*   **Database:** **PostgreSQL** (hosted on **Supabase**)
+*   **Deployment:** **Vercel**
+
+## Project Structure
+
+The codebase is organized following modern best practices, separating concerns for maintainability and scalability.
+
+```
+/
+├── prisma/
+│   └── schema.prisma      # Defines the database schema
+├── public/
+│   └── images/            # Static assets like pizza images
+├── src/
+│   ├── app/               # Core application routing and pages (Next.js App Router)
+│   │   ├── (internal)/    # Route group for staff-only pages
+│   │   │   ├── kitchen/
+│   │   │   └── monitor/
+│   │   ├── api/           # API routes (if any)
+│   │   ├── layout.js      # Root layout
+│   │   └── page.js        # Landing/Register page
+│   ├── components/        # Reusable React components (e.g., Modals, Buttons, Order Cards)
+│   ├── infrastructure/    # Data-layer logic (e.g., Prisma repository implementations)
+│   ├── server/            # Server-side business logic and services
+│   └── types/             # Shared data models and constants (e.g., toppings, menu items)
+├── .env.example           # Example environment file
+├── next.config.mjs        # Next.js configuration
+└── package.json           # Project dependencies and scripts
+```
 
 ## Getting Started
 
-First, run the development server:
+To run this project locally, follow these steps:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1.  **Clone the repository:**
+    ```bash
+    git clone <your-repository-url>
+    ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+3.  **Set up the environment:**
+    *   Create a new PostgreSQL database (e.g., on Supabase).
+    *   Rename the `.env.example` file to `.env`.
+    *   Update the `DATABASE_URL` in the `.env` file with your database connection string.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4.  **Push the database schema:**
+    *   The schema is defined in `prisma/schema.prisma`. You can use Prisma Migrate to create the tables.
+    ```bash
+    npx prisma migrate dev
+    ```
 
-## Learn More
+5.  **Run the development server:**
+    ```bash
+    npm run dev
+    ```
+    The application will be available at `http://localhost:3000`.
 
-To learn more about Next.js, take a look at the following resources:
+## Deployment
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+This application is configured for seamless deployment on **Vercel**.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1.  Push the code to a GitHub repository.
+2.  Import the repository into Vercel.
+3.  Set the `DATABASE_URL` environment variable in the Vercel project settings.
+4.  Vercel will automatically detect the Next.js framework, run the `npm run build` command (which includes `prisma generate`), and deploy the application.
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
