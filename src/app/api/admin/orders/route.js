@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { PrismaOrderRepository } from '../../../../infrastructure/repositories/PrismaOrderRepository'
-import { DEMO_MODE } from '../../../../lib/appConfig'
+
 
 const repo = new PrismaOrderRepository()
 
@@ -20,13 +20,6 @@ export async function GET() {
 
 // POST = admin mutation (LOCKED in demo)
 export async function POST() {
-  if (DEMO_MODE) {
-    return NextResponse.json(
-      { message: 'Demo mode: order creation is disabled' },
-      { status: 403 }
-    )
-  }
-
   return NextResponse.json({ ok: true })
 }
 

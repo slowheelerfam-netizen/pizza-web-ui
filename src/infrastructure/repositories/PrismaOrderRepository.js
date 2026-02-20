@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import { DEMO_MODE } from '../../lib/appConfig'
+
 
 export class PrismaOrderRepository {
   async getAll() {
@@ -40,7 +40,6 @@ export class PrismaOrderRepository {
 
   async create(order) {
     const { id, items = [], customerSnapshot, ...rest } = order
-    const isDemo = DEMO_MODE === true
 
     const created = await prisma.order.create({
       data: {
@@ -49,18 +48,12 @@ export class PrismaOrderRepository {
         status: rest.status || 'NEW',
         paymentMethod: rest.paymentMethod || 'PREPAID',
         isPaid: rest.isPaid || false,
-        source: isDemo ? 'DEMO' : rest.source || 'REGISTER',
+        source: rest.source || 'REGISTER',
         totalPrice: rest.totalPrice || 0,
-        customerName:
-          isDemo && !customerSnapshot?.name
-            ? 'Demo Customer'
-            : customerSnapshot?.name || null,
-        customerPhone:
-          isDemo && !customerSnapshot?.phone
-            ? '000-000-0000'
-            : customerSnapshot?.phone || null,
+        customerName: customerSnapshot?.name || null,
+        customerPhone: customerSnapshot?.phone || null,
         customerType: customerSnapshot?.type || 'PICKUP',
-        customerAddress: isDemo ? null : customerSnapshot?.address || null,
+        customerAddress: customerSnapshot?.address || null,
         isWalkIn: customerSnapshot?.isWalkIn ?? false,
         specialInstructions: rest.specialInstructions || null,
         items: {
