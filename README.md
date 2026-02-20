@@ -2,7 +2,7 @@
 
 This is a comprehensive, full-stack web application designed to simulate a real-world pizza restaurant's ordering and kitchen management system. It features a public-facing interface for customers to browse the menu and place orders, as well as internal views for staff to manage orders from the register and the kitchen.
 
-**Live Demo:** [Link to your Vercel deployment]
+**Live Demo:** [https://pizza-web-ui.vercel.app/](https://pizza-web-ui.vercel.app/)
 
 ---
 
