@@ -24,3 +24,13 @@ Repo: [your github url]
 ## Next Up
 - LinkedIn post update
 - Any new features TBD
+
+## Future Features
+
+### Offline / Local Network Mode
+- Swap Supabase for local PostgreSQL install
+- Run Next.js server on a local machine (Mac Mini, NUC, etc.)
+- All devices (register, kitchen, monitor) connect via local IP e.g. http://192.168.1.100:3000
+- No internet required — restaurant keeps functioning if internet goes down
+- Hybrid option: local first, sync to cloud when internet available
+- Selling point: "offline-capable POS system"
