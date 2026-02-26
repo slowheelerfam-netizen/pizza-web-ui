@@ -18,28 +18,20 @@ export default function PublicOrderInterface({
 }) {
   const [cart, setCart] = useState([])
   const [isBuilderOpen, setIsBuilderOpen] = useState(false)
-  const [selectedPizzaForBuilder, setSelectedPizzaForBuilder] = useState(
-    MENU_ITEMS[0]
-  )
-
+  const [selectedPizzaForBuilder, setSelectedPizzaForBuilder] = useState(MENU_ITEMS[0])
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState(null)
 
   const [optimisticOrders, addOptimisticOrder] = useOptimistic(
     initialOrders,
     (state, newOrUpdatedOrder) => {
-      const isExistingOrder = state.some(
-        (order) => order.id === newOrUpdatedOrder.id
-      )
-
+      const isExistingOrder = state.some((order) => order.id === newOrUpdatedOrder.id)
       if (isExistingOrder) {
         if (newOrUpdatedOrder.status === 'CANCELLED') {
           return state.filter((order) => order.id !== newOrUpdatedOrder.id)
         }
         return state.map((order) =>
-          order.id === newOrUpdatedOrder.id
-            ? { ...order, ...newOrUpdatedOrder }
-            : order
+          order.id === newOrUpdatedOrder.id ? { ...order, ...newOrUpdatedOrder } : order
         )
       } else {
         return [newOrUpdatedOrder, ...state]
@@ -52,6 +44,7 @@ export default function PublicOrderInterface({
   const [customerPhone, setCustomerPhone] = useState('')
   const [address, setAddress] = useState('')
   const [paymentMethod, setPaymentMethod] = useState('PREPAID')
+  const [orderSource, setOrderSource] = useState('REGISTER')
   const [specialInstructions, setSpecialInstructions] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [orderResult, setOrderResult] = useState(null)
@@ -60,7 +53,7 @@ export default function PublicOrderInterface({
   useEffect(() => {
     const interval = setInterval(() => {
       setTick(t => t + 1)
-    }, 60000) // update every minute
+    }, 60000)
     return () => clearInterval(interval)
   }, [])
 
@@ -91,7 +84,6 @@ export default function PublicOrderInterface({
     const diffMins = Math.floor(diffMs / 60000)
     const diffHours = Math.floor(diffMins / 60)
     const mins = diffMins % 60
-
     if (diffHours > 0) return `${diffHours}h ${mins}m`
     return `${diffMins}m`
   }
@@ -102,7 +94,19 @@ export default function PublicOrderInterface({
     if (diffMins >= 10) return 'text-orange-500 font-bold'
     return 'text-green-600 font-bold'
   }
-    const renderOrderCard = (order, columnType) => {
+
+  const getSourceBadge = (source) => {
+    switch (source) {
+      case 'REGISTER': return 'bg-indigo-100 text-indigo-700'
+      case 'ONLINE': return 'bg-blue-100 text-blue-700'
+      case 'WALK-IN': return 'bg-green-100 text-green-700'
+      case 'PHONE': return 'bg-yellow-100 text-yellow-700'
+      case 'INTERNAL': return 'bg-gray-100 text-gray-700'
+      default: return 'bg-indigo-100 text-indigo-700'
+    }
+  }
+
+  const renderOrderCard = (order, columnType) => {
     const isNew = order.status === 'NEW'
     return (
       <div
@@ -118,7 +122,7 @@ export default function PublicOrderInterface({
               {order.customerSnapshot?.name || 'Guest'}
             </div>
             {order.source && (
-              <div className="text-xs font-semibold uppercase tracking-wider text-indigo-600">
+              <div className={`text-xs font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded inline-block ${getSourceBadge(order.source)}`}>
                 {order.source}
               </div>
             )}
@@ -251,8 +255,7 @@ export default function PublicOrderInterface({
   }
 
   const handleCancelOrder = (orderId) => {
-    if (!confirm('Are you sure you want to permanently cancel this order?'))
-      return
+    if (!confirm('Are you sure you want to permanently cancel this order?')) return
     handleStatusChange(orderId, 'CANCELLED')
     handleCloseDetailModal()
   }
@@ -269,14 +272,6 @@ export default function PublicOrderInterface({
     e.preventDefault()
     setIsSubmitting(true)
 
-    const customerSnapshot = {
-      name: customerName,
-      phone: customerPhone,
-      type: 'PICKUP',
-      address: address,
-      isWalkIn: false,
-    }
-
     let result = { success: false, message: 'Failed' }
 
     const formData = new FormData()
@@ -288,6 +283,7 @@ export default function PublicOrderInterface({
     formData.append('totalPrice', cartTotal.toString())
     formData.append('specialInstructions', specialInstructions)
     formData.append('paymentMethod', paymentMethod)
+    formData.append('source', orderSource)
 
     if (createOrderAction) {
       result = await createOrderAction(null, formData)
@@ -308,6 +304,7 @@ export default function PublicOrderInterface({
       setCustomerPhone('')
       setAddress('')
       setPaymentMethod('PREPAID')
+      setOrderSource('REGISTER')
       setSpecialInstructions('')
       setIsCheckoutMode(false)
       setTimeout(() => setOrderResult(null), 3000)
@@ -325,6 +322,7 @@ export default function PublicOrderInterface({
 
           <form onSubmit={handleCheckoutSubmit} className="p-6">
             <div className="mb-4 space-y-3">
+
               <div>
                 <label className="mb-1 block text-sm font-extrabold text-black">
                   Customer Name
@@ -350,6 +348,23 @@ export default function PublicOrderInterface({
                   onChange={(e) => setCustomerPhone(e.target.value)}
                   placeholder="(555) 555-5555"
                 />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-extrabold text-black">
+                  Order Source
+                </label>
+                <select
+                  value={orderSource}
+                  onChange={(e) => setOrderSource(e.target.value)}
+                  className="w-full rounded-lg border-2 border-gray-200 bg-gray-50 p-2 font-bold text-black shadow-sm focus:border-indigo-500 focus:bg-white"
+                >
+                  <option value="REGISTER">Register</option>
+                  <option value="ONLINE">Online</option>
+                  <option value="WALK-IN">Walk-In</option>
+                  <option value="PHONE">Phone</option>
+                  <option value="INTERNAL">Internal</option>
+                </select>
               </div>
 
               <div>
@@ -381,6 +396,7 @@ export default function PublicOrderInterface({
                   </label>
                 </div>
               </div>
+
             </div>
 
             <div className="mb-6 rounded-lg border border-gray-200 bg-gray-100 p-4">
@@ -388,9 +404,7 @@ export default function PublicOrderInterface({
               <ul className="space-y-1 text-sm font-bold text-gray-800">
                 {cart.map((item, i) => (
                   <li key={i} className="flex justify-between">
-                    <span>
-                      {item.quantity || 1}x {item.name}
-                    </span>
+                    <span>{item.quantity || 1}x {item.name}</span>
                     <span>${item.price.toFixed(2)}</span>
                   </li>
                 ))}
@@ -426,6 +440,7 @@ export default function PublicOrderInterface({
                   setCustomerPhone('')
                   setAddress('')
                   setPaymentMethod('PREPAID')
+                  setOrderSource('REGISTER')
                   setSpecialInstructions('')
                   setIsCheckoutMode(false)
                 }}
@@ -446,7 +461,6 @@ export default function PublicOrderInterface({
       {showKitchenModals && <KitchenWelcomeModal />}
       {showKitchenModals && <KitchenTooltip />}
       <div className="flex min-h-screen flex-col bg-slate-100">
-        {/* Header */}
         <header className="z-10 flex items-center justify-between bg-white px-6 py-3 shadow-sm">
           <h1 className="text-xl font-black tracking-tight text-indigo-900">
             🍕 Krusty&apos;s Pizza{' '}
@@ -454,9 +468,9 @@ export default function PublicOrderInterface({
           </h1>
         </header>
 
-        {/* 3-Column Dashboard */}
         <div className="flex-1 overflow-hidden p-6">
           <div className="grid h-full grid-cols-1 gap-6 md:grid-cols-3">
+
             {/* COL 1: PREP */}
             <div className="flex flex-col rounded-2xl bg-white shadow-xl">
               <div className="rounded-t-2xl border-b border-gray-100 bg-yellow-50 p-4">
@@ -477,7 +491,6 @@ export default function PublicOrderInterface({
                     <div className="my-4 border-t border-dashed border-gray-300"></div>
                   </div>
                 )}
-
                 {activePrepOrders.length > 0 && (
                   <div className="mb-4">
                     <h3 className="mb-2 text-xs font-black tracking-wider text-indigo-600 uppercase">
@@ -486,7 +499,6 @@ export default function PublicOrderInterface({
                     {activePrepOrders.map((o) => renderOrderCard(o, 'PREP'))}
                   </div>
                 )}
-
                 {newOrders.length === 0 && activePrepOrders.length === 0 && (
                   <div className="py-10 text-center text-gray-400">
                     No orders in Prep
@@ -534,10 +546,10 @@ export default function PublicOrderInterface({
                 )}
               </div>
             </div>
+
           </div>
         </div>
 
-        {/* Bottom Action Bar */}
         <footer className="flex items-center justify-center gap-4 bg-white p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
           <button
             onClick={() => setIsBuilderOpen(true)}
