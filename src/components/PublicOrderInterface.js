@@ -43,8 +43,8 @@ export default function PublicOrderInterface({
   const [customerName, setCustomerName] = useState('')
   const [customerPhone, setCustomerPhone] = useState('')
   const [address, setAddress] = useState('')
-  const [paymentMethod, setPaymentMethod] = useState('PREPAID')
-  const [orderSource, setOrderSource] = useState('REGISTER')
+  const [paymentMethod, setPaymentMethod] = useState('CASH')
+  const [orderSource, setOrderSource] = useState('WALK-IN')
   const [specialInstructions, setSpecialInstructions] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [orderResult, setOrderResult] = useState(null)
@@ -359,8 +359,6 @@ export default function PublicOrderInterface({
                   onChange={(e) => setOrderSource(e.target.value)}
                   className="w-full rounded-lg border-2 border-gray-200 bg-gray-50 p-2 font-bold text-black shadow-sm focus:border-indigo-500 focus:bg-white"
                 >
-                  <option value="REGISTER">Register</option>
-                  <option value="ONLINE">Online</option>
                   <option value="WALK-IN">Walk-In</option>
                   <option value="PHONE">Phone</option>
                   <option value="INTERNAL">Internal</option>
@@ -371,30 +369,17 @@ export default function PublicOrderInterface({
                 <label className="mb-1 block text-sm font-extrabold text-black">
                   Payment
                 </label>
-                <div className="flex gap-4">
-                  <label className="flex items-center gap-2 font-bold text-black">
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="PREPAID"
-                      checked={paymentMethod === 'PREPAID'}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                    />
-                    <span>Pre-paid</span>
-                  </label>
-                  <label className="flex items-center gap-2 font-bold text-black">
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="PAY_AT_REGISTER"
-                      checked={paymentMethod === 'PAY_AT_REGISTER'}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                    />
-                    <span>Collect Payment</span>
-                  </label>
-                </div>
+                <select
+                  value={paymentMethod}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                  className="w-full rounded-lg border-2 border-gray-200 bg-gray-50 p-2 font-bold text-black shadow-sm focus:border-indigo-500 focus:bg-white"
+                >
+                  <option value="CASH">Cash</option>
+                  <option value="CREDIT_CARD">Credit Card</option>
+                  <option value="DEBIT_CARD">Debit Card</option>
+                  <option value="APPLE_PAY">Apple Pay</option>
+                  <option value="GOOGLE_PAY">Google Pay</option>
+                </select>
               </div>
 
             </div>

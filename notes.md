@@ -34,3 +34,6 @@ Repo: [your github url]
 - No internet required — restaurant keeps functioning if internet goes down
 - Hybrid option: local first, sync to cloud when internet available
 - Selling point: "offline-capable POS system"
+## Future Research
+- Explore processor-free payment options (ACH at POS, tap-to-pay, cash discount programs)
+- Goal: reduce or eliminate 2.6% processor fee for restaurant owners
