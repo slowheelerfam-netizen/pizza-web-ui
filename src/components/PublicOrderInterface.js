@@ -76,7 +76,25 @@ export default function PublicOrderInterface({
     .filter((o) => o.status === 'READY')
     .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
 
-  const renderOrderCard = (order, columnType) => {
+  const getElapsedTime = (createdAt) => {
+    const now = new Date()
+    const created = new Date(createdAt)
+    const diffMs = now - created
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMins / 60)
+    const mins = diffMins % 60
+
+    if (diffHours > 0) return `${diffHours}h ${mins}m`
+    return `${diffMins}m`
+  }
+
+  const getElapsedColor = (createdAt) => {
+    const diffMins = Math.floor((new Date() - new Date(createdAt)) / 60000)
+    if (diffMins >= 20) return 'text-red-600 font-black'
+    if (diffMins >= 10) return 'text-orange-500 font-bold'
+    return 'text-green-600 font-bold'
+  }
+    const renderOrderCard = (order, columnType) => {
     const isNew = order.status === 'NEW'
     return (
       <div
@@ -101,6 +119,9 @@ export default function PublicOrderInterface({
             </div>
             <div className="text-xs text-gray-500">
               #{order.displayId} • ${order.totalPrice.toFixed(2)}
+            </div>
+            <div className={`text-xs mt-1 ${getElapsedColor(order.createdAt)}`}>
+              ⏱ {getElapsedTime(order.createdAt)}
             </div>
             {isNew && (
               <span className="mt-1 inline-block rounded bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-800">
