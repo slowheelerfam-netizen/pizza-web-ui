@@ -55,6 +55,14 @@ export default function PublicOrderInterface({
   const [specialInstructions, setSpecialInstructions] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [orderResult, setOrderResult] = useState(null)
+  const [, setTick] = useState(0)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTick(t => t + 1)
+    }, 60000) // update every minute
+    return () => clearInterval(interval)
+  }, [])
 
   const activeOrders = optimisticOrders.filter(
     (o) => o.status !== 'COMPLETED' && o.status !== 'CANCELLED'
