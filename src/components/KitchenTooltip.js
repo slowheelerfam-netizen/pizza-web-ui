@@ -36,8 +36,9 @@ export default function KitchenTooltip() {
     >
       <div className="relative max-w-xs rounded-xl bg-blue-600 px-4 py-3 text-white shadow-xl">
         <p className="text-sm font-bold">👆 Start here!</p>
-        <p className="mt-1 text-xs text-blue-100">
-          Click <strong>Start Prep</strong> on a new order to begin cooking.
+        <p className="mt-1 text-xs text-blue-100 leading-relaxed">
+          Orders are manually moved through the kitchen by clicking the button on each card as it progresses —{" "}
+          <strong className="text-white">Start Prep → Oven → Boxing → Complete</strong>.
         </p>
         <div className="absolute -bottom-2 right-6 h-4 w-4 rotate-45 bg-blue-600" />
         <button

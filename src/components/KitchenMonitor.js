@@ -5,8 +5,6 @@ import { useState, useEffect } from 'react'
 export default function KitchenMonitor({ initialOrders = [] }) {
   const [orders, setOrders] = useState(initialOrders)
 
-  // This is a simplified example. In a real-world scenario, you'd use
-  // websockets or a library like SWR/React Query for real-time updates.
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
@@ -14,23 +12,20 @@ export default function KitchenMonitor({ initialOrders = [] }) {
         if (res.ok) {
           const freshOrders = await res.json()
           const activeOrders = freshOrders.filter(
-            (o) => o.status === 'PREP' || o.status === 'OVEN'
+            (o) => o.status === 'PREP'
           )
           setOrders(activeOrders)
         }
       } catch (error) {
         console.error('Failed to refresh orders:', error)
       }
-    }, 5000) // Refresh every 5 seconds
+    }, 5000)
 
     return () => clearInterval(interval)
   }, [])
 
   const prepOrders = orders
     .filter((o) => o.status === 'PREP')
-    .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
-  const ovenOrders = orders
-    .filter((o) => o.status === 'OVEN')
     .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
 
   const renderOrderCard = (order) => (
@@ -47,13 +42,7 @@ export default function KitchenMonitor({ initialOrders = [] }) {
             #{order.displayId}
           </div>
         </div>
-        <div
-          className={`rounded-full px-3 py-1 text-sm font-bold ${
-            order.status === 'PREP'
-              ? 'bg-yellow-100 text-yellow-800'
-              : 'bg-orange-100 text-orange-800'
-          }`}
-        >
+        <div className="rounded-full bg-yellow-100 px-3 py-1 text-sm font-bold text-yellow-800">
           {order.status}
         </div>
       </div>
@@ -83,8 +72,7 @@ export default function KitchenMonitor({ initialOrders = [] }) {
           Kitchen Monitor
         </h1>
       </header>
-      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 lg:grid-cols-2">
-        {/* PREP Column */}
+      <div className="mx-auto max-w-3xl">
         <div className="rounded-2xl bg-slate-700/50 p-6 shadow-2xl">
           <h2 className="mb-6 flex items-center justify-between text-3xl font-bold text-yellow-300">
             <span>👨‍🍳 PREP</span>
@@ -98,25 +86,6 @@ export default function KitchenMonitor({ initialOrders = [] }) {
             ) : (
               <div className="py-16 text-center text-lg font-medium text-slate-400">
                 No orders to prepare.
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* OVEN Column */}
-        <div className="rounded-2xl bg-slate-700/50 p-6 shadow-2xl">
-          <h2 className="mb-6 flex items-center justify-between text-3xl font-bold text-orange-300">
-            <span>🔥 OVEN</span>
-            <span className="rounded-full bg-orange-300/20 px-3 py-1 text-xl font-semibold">
-              {ovenOrders.length}
-            </span>
-          </h2>
-          <div className="max-h-[70vh] overflow-y-auto pr-2">
-            {ovenOrders.length > 0 ? (
-              ovenOrders.map(renderOrderCard)
-            ) : (
-              <div className="py-16 text-center text-lg font-medium text-slate-400">
-                No orders in the oven.
               </div>
             )}
           </div>

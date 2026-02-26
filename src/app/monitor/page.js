@@ -8,7 +8,7 @@ export default async function MonitorPage() {
   const initialOrders = data?.orders || []
 
   const activeOrders = initialOrders.filter(
-    (o) => o.status === 'PREP' || o.status === 'OVEN'
+    (o) => o.status === 'PREP'
   )
 
   return <KitchenMonitor initialOrders={activeOrders} />

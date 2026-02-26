@@ -420,7 +420,7 @@ export default function PublicOrderInterface({
         {/* Header */}
         <header className="z-10 flex items-center justify-between bg-white px-6 py-3 shadow-sm">
           <h1 className="text-xl font-black tracking-tight text-indigo-900">
-            🍕 Don&apos;s Pizza{' '}
+            🍕 Krusty&apos;s Pizza{' '}
             <span className="font-medium text-slate-400">| Register</span>
           </h1>
         </header>
