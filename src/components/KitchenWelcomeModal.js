@@ -15,6 +15,8 @@ export default function KitchenWelcomeModal() {
   const handleClose = () => {
     sessionStorage.setItem("kitchenModalSeen", "true");
     setIsOpen(false);
+    // Tell the tooltip to show
+    window.dispatchEvent(new CustomEvent("kitchenModalClosed"));
   };
 
   if (!isOpen) return null;

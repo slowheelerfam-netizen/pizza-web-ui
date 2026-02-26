@@ -8,7 +8,6 @@ import {
   fetchDashboardData,
 } from '../actions'
 import PublicOrderInterface from '@/components/PublicOrderInterface'
-import KitchenWelcomeModal from '@/components/KitchenWelcomeModal'
 
 export default async function KitchenPage() {
   const data = await fetchDashboardData()
@@ -18,18 +17,16 @@ export default async function KitchenPage() {
   const warnings = data?.warnings || []
 
   return (
-    <>
-      <KitchenWelcomeModal />
-      <PublicOrderInterface
-        initialOrders={orders}
-        employees={employees}
-        warnings={warnings}
-        createOrderAction={createOrderAction}
-        updateStatusAction={updateStatusAction}
-        checkCustomerWarningAction={checkCustomerWarningAction}
-        markOrderAsPaidAction={markOrderAsPaidAction}
-        isRegisterView={true}
-      />
-    </>
+    <PublicOrderInterface
+      initialOrders={orders}
+      employees={employees}
+      warnings={warnings}
+      createOrderAction={createOrderAction}
+      updateStatusAction={updateStatusAction}
+      checkCustomerWarningAction={checkCustomerWarningAction}
+      markOrderAsPaidAction={markOrderAsPaidAction}
+      isRegisterView={true}
+      showKitchenModals={true}
+    />
   )
 }
