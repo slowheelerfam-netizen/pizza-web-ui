@@ -491,22 +491,20 @@ const handleCheckoutSubmit = async (e) => {
       {showKitchenModals && <KitchenTooltip />}
       <div className="flex min-h-screen flex-col bg-slate-100">
         <header className="z-10 flex items-center justify-between bg-white px-6 py-3 shadow-sm">
-          <div className="flex items-center gap-6">
-            <h1 className="text-xl font-black tracking-tight text-indigo-900">
-              🍕 Krusty&apos;s Pizza{' '}
-              <span className="font-medium text-slate-400">
-                {showKitchenModals ? '| Kitchen' : '| Register'}
-              </span>
-            </h1>
-            {!showKitchenModals && (
-              <nav className="flex items-center gap-3">
-                <a href="/register" className="text-sm font-bold text-indigo-600 hover:text-indigo-800">Register</a>
-                <a href="/kitchen" className="text-sm font-bold text-indigo-600 hover:text-indigo-800">Kitchen</a>
-                <a href="/monitor" className="text-sm font-bold text-indigo-600 hover:text-indigo-800">Monitor</a>
-                <a href="/" className="text-sm font-bold text-indigo-600 hover:text-indigo-800">Home</a>
-              </nav>
-            )}
-          </div>
+          <h1 className="text-xl font-black tracking-tight text-indigo-900">
+            🍕 Krusty&apos;s Pizza{' '}
+            <span className="font-medium text-slate-400">
+              {showKitchenModals ? '| Kitchen' : '| Register'}
+            </span>
+          </h1>
+          {!showKitchenModals && (
+            <nav className="flex items-center gap-4">
+              <a href="/register" className="text-sm font-bold text-indigo-600 hover:text-indigo-800">Register</a>
+              <a href="/kitchen" className="text-sm font-bold text-indigo-600 hover:text-indigo-800">Kitchen</a>
+              <a href="/monitor" className="text-sm font-bold text-indigo-600 hover:text-indigo-800">Monitor</a>
+              <a href="/" className="text-sm font-bold text-indigo-600 hover:text-indigo-800">Home</a>
+            </nav>
+          )}
         </header>
 
         <div className="flex-1 overflow-hidden p-6">
