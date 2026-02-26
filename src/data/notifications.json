@@ -1438,5 +1438,45 @@
     "status": "SENT",
     "message": "Hello wer, your order is READY!",
     "sentAt": "2026-02-20T17:48:18.162Z"
+  },
+  {
+    "id": "f04247c6-1991-43be-90fc-362d83d26159",
+    "orderId": "02345f67-a11a-4995-b667-7ca56d7f6eb4",
+    "customerName": "adf",
+    "phone": "3434343434",
+    "type": "SMS",
+    "status": "SENT",
+    "message": "Hello adf, your pizza will be ready in approximately 10 minutes.",
+    "sentAt": "2026-02-25T21:25:42.710Z"
+  },
+  {
+    "id": "9c7de722-055f-41d1-b90e-1f848a637266",
+    "orderId": "02345f67-a11a-4995-b667-7ca56d7f6eb4",
+    "customerName": "adf",
+    "phone": "3434343434",
+    "type": "SMS",
+    "status": "SENT",
+    "message": "Hello adf, your order is READY!",
+    "sentAt": "2026-02-25T21:25:44.997Z"
+  },
+  {
+    "id": "d05a9a43-c630-40f2-99b0-39bb987df6f6",
+    "orderId": "318a5b38-52bc-4854-8583-1627c32da59c",
+    "customerName": "erer",
+    "phone": "2323232323",
+    "type": "SMS",
+    "status": "SENT",
+    "message": "Hello erer, your pizza will be ready in approximately 10 minutes.",
+    "sentAt": "2026-02-26T01:20:58.707Z"
+  },
+  {
+    "id": "780fc24b-b00f-4fc3-bf72-f383bbf9c316",
+    "orderId": "318a5b38-52bc-4854-8583-1627c32da59c",
+    "customerName": "erer",
+    "phone": "2323232323",
+    "type": "SMS",
+    "status": "SENT",
+    "message": "Hello erer, your order is READY!",
+    "sentAt": "2026-02-26T01:21:00.119Z"
   }
 ]

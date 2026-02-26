@@ -18,9 +18,12 @@ export default function RootLayout({ children }) {
         className={`${GeistSans.variable} ${GeistMono.variable} ${dancingScript.variable} antialiased bg-black`}
       >
         <DemoModeIndicator />
-        {children}
+        <div className="max-w-[1280px] mx-auto relative">
+          {children}
+        </div>
       </body>
     </html>
   )
 }
+
 

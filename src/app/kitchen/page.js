@@ -1,4 +1,3 @@
-
 export const dynamic = 'force-dynamic'
 
 import {
@@ -9,6 +8,7 @@ import {
   fetchDashboardData,
 } from '../actions'
 import PublicOrderInterface from '@/components/PublicOrderInterface'
+import KitchenWelcomeModal from '@/components/KitchenWelcomeModal'
 
 export default async function KitchenPage() {
   const data = await fetchDashboardData()
@@ -18,14 +18,18 @@ export default async function KitchenPage() {
   const warnings = data?.warnings || []
 
   return (
-    <PublicOrderInterface
-      initialOrders={orders}
-      employees={employees}
-      warnings={warnings}
-      createOrderAction={createOrderAction}
-      updateStatusAction={updateStatusAction}
-      checkCustomerWarningAction={checkCustomerWarningAction}
-      markOrderAsPaidAction={markOrderAsPaidAction}
-    />
+    <>
+      <KitchenWelcomeModal />
+      <PublicOrderInterface
+        initialOrders={orders}
+        employees={employees}
+        warnings={warnings}
+        createOrderAction={createOrderAction}
+        updateStatusAction={updateStatusAction}
+        checkCustomerWarningAction={checkCustomerWarningAction}
+        markOrderAsPaidAction={markOrderAsPaidAction}
+        isRegisterView={true}
+      />
+    </>
   )
 }
