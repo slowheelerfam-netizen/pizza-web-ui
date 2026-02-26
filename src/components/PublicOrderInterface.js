@@ -48,6 +48,7 @@ export default function PublicOrderInterface({
   const [specialInstructions, setSpecialInstructions] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [orderResult, setOrderResult] = useState(null)
+  const [paymentScreen, setPaymentScreen] = useState(null)
   const [, setTick] = useState(0)
 
   useEffect(() => {
@@ -268,7 +269,7 @@ export default function PublicOrderInterface({
 
   const cartTotal = cart.reduce((sum, item) => sum + item.price, 0)
 
-  const handleCheckoutSubmit = async (e) => {
+const handleCheckoutSubmit = async (e) => {
     e.preventDefault()
     setIsSubmitting(true)
 
@@ -299,16 +300,59 @@ export default function PublicOrderInterface({
         addOptimisticOrder(result.order)
       })
 
+      setPaymentScreen({
+        method: paymentMethod,
+        total: cartTotal,
+        orderId: result.order.id,
+      })
       setCart([])
       setCustomerName('')
       setCustomerPhone('')
       setAddress('')
-      setPaymentMethod('PREPAID')
-      setOrderSource('REGISTER')
+      setPaymentMethod('CASH')
+      setOrderSource('WALK-IN')
       setSpecialInstructions('')
       setIsCheckoutMode(false)
       setTimeout(() => setOrderResult(null), 3000)
     }
+  }
+
+// --- PAYMENT SCREEN ---
+  if (paymentScreen) {
+    const paymentDetails = {
+      CASH: { icon: '💵', label: 'Collect Cash Payment', instruction: 'Count and collect cash from customer.' },
+      CREDIT_CARD: { icon: '💳', label: 'Process Credit Card', instruction: 'Present card reader to customer.' },
+      DEBIT_CARD: { icon: '💳', label: 'Process Debit Card', instruction: 'Present card reader to customer.' },
+      APPLE_PAY: { icon: '📱', label: 'Apple Pay', instruction: 'Present reader for tap payment.' },
+      GOOGLE_PAY: { icon: '📱', label: 'Google Pay', instruction: 'Present reader for tap payment.' },
+    }
+    const details = paymentDetails[paymentScreen.method] || paymentDetails.CASH
+
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+        <div className="w-full max-w-sm overflow-hidden rounded-2xl bg-white shadow-2xl">
+          <div className="bg-indigo-600 px-6 py-5 text-center text-white">
+            <div className="text-5xl mb-2">{details.icon}</div>
+            <h2 className="text-xl font-bold">{details.label}</h2>
+          </div>
+          <div className="p-6 text-center">
+            <p className="text-sm text-gray-500 mb-2">Amount Due</p>
+            <p className="text-5xl font-black text-gray-900 mb-4">
+              ${paymentScreen.total.toFixed(2)}
+            </p>
+            <p className="text-sm font-medium text-gray-500 mb-8">
+              {details.instruction}
+            </p>
+            <button
+              onClick={() => setPaymentScreen(null)}
+              className="w-full rounded-xl bg-green-600 py-4 text-lg font-bold text-white shadow-lg hover:bg-green-500 active:scale-95 transition-all"
+            >
+              ✓ Payment Received
+            </button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   // --- CHECKOUT MODAL ---
@@ -424,8 +468,8 @@ export default function PublicOrderInterface({
                   setCustomerName('')
                   setCustomerPhone('')
                   setAddress('')
-                  setPaymentMethod('PREPAID')
-                  setOrderSource('REGISTER')
+                  setPaymentMethod('CASH')
+                  setOrderSource('WALK-IN')
                   setSpecialInstructions('')
                   setIsCheckoutMode(false)
                 }}
