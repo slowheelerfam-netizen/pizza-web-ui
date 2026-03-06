@@ -10,20 +10,19 @@ Repo: [your github url]
 - Prisma + PostgreSQL
 - Deployed on [your host]
 
-## Current State
-- Header: full-width red background, z-50, working nav
-- Home page: HomeWelcomeModal (shows once per session via sessionStorage)
-- Kitchen page (/kitchen): 
-  - KitchenWelcomeModal (shows once per session)
-  - KitchenTooltip (appears after modal closes, explains manual order progression)
-  - Both modals live inside PublicOrderInterface via showKitchenModals prop
-- Monitor page (/monitor): PREP orders only, single column
-- PublicOrderInterface: shared by Register and Kitchen, uses isRegisterView prop
-- All branding updated to Krusty's Pizza
+## Current Session Progress
 
-## Next Up
-- LinkedIn post update
-- Any new features TBD
+### Completed Today
+- Elapsed time timer on order cards (green/orange/red)
+- Order source selector (Walk-In, Phone, Internal) with colored badges
+- Payment confirmation screen (Cash, Credit Card, Debit Card, Apple Pay, Google Pay)
+- Dynamic header - Kitchen shows "| Kitchen", Register shows "| Register"
+- Nav links aligned right on Register, hidden on Kitchen
+
+### Next Up
+- Monitor page: full width layout, large text, designed for TV/large screen
+- Phone number auto-format with default area code
+- Update NOTES.md with feature flag / SaaS pricing tier architecture
 
 ## Future Features
 
@@ -34,6 +33,8 @@ Repo: [your github url]
 - No internet required — restaurant keeps functioning if internet goes down
 - Hybrid option: local first, sync to cloud when internet available
 - Selling point: "offline-capable POS system"
+
+
 ## Future Research
 - Explore processor-free payment options (ACH at POS, tap-to-pay, cash discount programs)
 - Goal: reduce or eliminate 2.6% processor fee for restaurant owners

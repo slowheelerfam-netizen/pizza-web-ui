@@ -20,6 +20,11 @@ export default function OrderCreationForm() {
   const [warning, setWarning] = useState(null)
   const [overrideWarning, setOverrideWarning] = useState(false)
 
+  // ── Validation popup state ───────────────────────────────────────────────
+  const [emptyPizzaAlert, setEmptyPizzaAlert] = useState(false)         // 0 ingredients
+  const [overloadedPizzas, setOverloadedPizzas] = useState([])          // 5+ toppings
+  const [overloadConfirmPending, setOverloadConfirmPending] = useState(false)
+
   const [isPending, startTransition] = useTransition()
 
   const cartTotal = items.reduce((sum, item) => sum + item.price, 0)
@@ -31,7 +36,33 @@ export default function OrderCreationForm() {
     setOverrideWarning(false)
   }
 
-  const handleSubmit = () => {
+  // ── Validation logic ─────────────────────────────────────────────────────
+  const validateItems = () => {
+    // Check for any pizza with 0 ingredients/toppings
+    const hasEmpty = items.some((item) => {
+      const toppings = item.toppings || []
+      const menuItem = MENU_ITEMS.find((m) => m.name === item.name)
+      const baseIngredients = menuItem?.ingredients || []
+      return toppings.length === 0 && baseIngredients.length === 0
+    })
+
+    if (hasEmpty) {
+      setEmptyPizzaAlert(true)
+      return false
+    }
+
+    // Check for pizzas with 5+ toppings
+    const overloaded = items.filter((item) => (item.toppings || []).length >= 5)
+    if (overloaded.length > 0) {
+      setOverloadedPizzas(overloaded)
+      setOverloadConfirmPending(true)
+      return false
+    }
+
+    return true
+  }
+
+  const submitOrder = () => {
     const formData = new FormData()
     formData.append('customerName', customerName)
     formData.append('customerPhone', customerPhone)
@@ -58,6 +89,11 @@ export default function OrderCreationForm() {
         setIsPriority(false)
       }
     })
+  }
+
+  const handleSubmit = () => {
+    const valid = validateItems()
+    if (valid) submitOrder()
   }
 
   return (
@@ -99,6 +135,73 @@ export default function OrderCreationForm() {
         )}
       </div>
 
+      {/* ── Modal: Empty pizza warning (hard block) ── */}
+      {emptyPizzaAlert && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl text-center space-y-4">
+            <div className="text-5xl">🚫</div>
+            <h2 className="text-2xl font-black text-red-600">Empty Pizza!</h2>
+            <p className="text-gray-600 font-medium">
+              One or more pizzas have <span className="font-black text-red-500">no ingredients</span>.
+              Please go back and add toppings before placing this order.
+            </p>
+            <button
+              className="w-full rounded-xl bg-red-500 py-3 text-white font-black"
+              onClick={() => setEmptyPizzaAlert(false)}
+            >
+              Go Back & Fix It
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal: Too many toppings disclaimer (can override) ── */}
+      {overloadConfirmPending && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl text-center space-y-4">
+            <div className="text-5xl">⚠️</div>
+            <h2 className="text-2xl font-black text-orange-500">Too Many Toppings!</h2>
+            <p className="text-gray-600 font-medium">
+              {overloadedPizzas.length === 1
+                ? 'A pizza in this order'
+                : `${overloadedPizzas.length} pizzas in this order`}{' '}
+              {overloadedPizzas.length === 1 ? 'has' : 'have'}{' '}
+              <span className="font-black text-orange-500">5 or more toppings</span>.
+              Overloaded pizzas may not cook evenly and could come out undercooked.
+            </p>
+            <ul className="text-left text-sm text-gray-500 font-semibold space-y-1">
+              {overloadedPizzas.map((p, i) => (
+                <li key={i}>
+                  • {p.name} ({(p.toppings || []).length} toppings:{' '}
+                  {(p.toppings || []).join(', ')})
+                </li>
+              ))}
+            </ul>
+            <div className="flex gap-3 pt-2">
+              <button
+                className="flex-1 rounded-xl border-2 border-gray-300 py-3 font-black text-gray-700"
+                onClick={() => {
+                  setOverloadConfirmPending(false)
+                  setOverloadedPizzas([])
+                }}
+              >
+                Go Back
+              </button>
+              <button
+                className="flex-1 rounded-xl bg-orange-500 py-3 font-black text-white"
+                onClick={() => {
+                  setOverloadConfirmPending(false)
+                  setOverloadedPizzas([])
+                  submitOrder()
+                }}
+              >
+                Place Anyway
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {isModalOpen && (
         <PizzaBuilderModal
           isOpen
@@ -113,6 +216,3 @@ export default function OrderCreationForm() {
     </>
   )
 }
-
-
-

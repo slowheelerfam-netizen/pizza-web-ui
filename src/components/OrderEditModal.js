@@ -8,7 +8,6 @@ import { ORDER_STATUS } from '../types/models'
  * CONTRACT (LOCKED)
  * -----------------
  * Status flow: NEW → PREP → OVEN → READY
- * - PREP does NOT exist (Wait, I should remove this line or say MONITOR does not exist)
  * - REGISTER can only advance NEW → PREP
  * - KITCHEN advances PREP → OVEN → READY
  */
@@ -41,19 +40,9 @@ export default function OrderEditModal({
 
   const handleWorkflowAction = (nextStatus) => {
     if (!onStatusUpdate) return
-
     startTransition(async () => {
       if (shouldPrint && onPrint) onPrint(order)
-
-      // IMPORTANT:
-      // - REGISTER uses assignment
-      // - KITCHEN must NOT pass assignment (was breaking PREP → OVEN)
-      if (viewContext === 'REGISTER') {
-        await onStatusUpdate(order.id, nextStatus, assignment || null)
-      } else {
-        await onStatusUpdate(order.id, nextStatus)
-      }
-
+      await onStatusUpdate(order.id, nextStatus, assignment || null)
       router.refresh()
       onClose()
     })
@@ -115,13 +104,48 @@ export default function OrderEditModal({
 
     /** KITCHEN */
     if (viewContext === 'KITCHEN') {
+      const available = employees.filter((e) => e.isOnDuty === true)
+
       return (
         <div className="space-y-4 rounded-xl bg-indigo-50 p-4">
+          <h3 className="text-sm font-bold text-indigo-900 uppercase">
+            Kitchen Actions
+          </h3>
+
+          {/* Cook assignment — always visible in Kitchen */}
+          <div>
+            <label className="mb-1 block text-xs font-black text-gray-600 uppercase">
+              Assign Cook
+            </label>
+            <select
+              value={assignment}
+              onChange={(e) => setAssignment(e.target.value)}
+              className="w-full rounded-lg border-2 border-gray-300 p-2 font-bold"
+            >
+              <option value="">Unassigned</option>
+              {available.map((e) => (
+                <option key={e.id} value={e.name}>
+                  {e.name} — {e.role}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {order.status === ORDER_STATUS.NEW && (
+            <button
+              onClick={() => handleWorkflowAction(ORDER_STATUS.PREP)}
+              disabled={isPending || !assignment}
+              className="w-full rounded bg-blue-100 px-2 py-3 text-sm font-bold text-blue-700 hover:bg-blue-200 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              {assignment ? `Start Prep → ${assignment}` : 'Select a cook first'}
+            </button>
+          )}
+
           {order.status === ORDER_STATUS.PREP && (
             <button
               onClick={() => handleWorkflowAction(ORDER_STATUS.OVEN)}
               disabled={isPending}
-              className="w-full rounded bg-orange-100 px-2 py-1 text-xs font-bold text-orange-700 hover:bg-orange-200 disabled:opacity-50"
+              className="w-full rounded bg-orange-100 px-2 py-3 text-sm font-bold text-orange-700 hover:bg-orange-200 disabled:opacity-50"
             >
               Send to OVEN
             </button>
@@ -131,7 +155,7 @@ export default function OrderEditModal({
             <button
               onClick={() => handleWorkflowAction(ORDER_STATUS.READY)}
               disabled={isPending}
-              className="w-full rounded bg-green-100 px-2 py-1 text-xs font-bold text-green-700 hover:bg-green-200 disabled:opacity-50"
+              className="w-full rounded bg-green-100 px-2 py-3 text-sm font-bold text-green-700 hover:bg-green-200 disabled:opacity-50"
             >
               Start BOXING
             </button>
@@ -140,7 +164,7 @@ export default function OrderEditModal({
       )
     }
 
-    /** OVEN (Added to support OVEN view context) */
+    /** OVEN */
     if (viewContext === 'OVEN') {
       return (
         <div className="space-y-4 rounded-xl bg-orange-50 p-4">

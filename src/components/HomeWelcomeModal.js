@@ -27,7 +27,7 @@ export default function HomeWelcomeModal() {
         <p className="text-gray-300 mb-6">Here's how to experience the full restaurant system:</p>
         <ol className="space-y-3 text-gray-300 mb-6">
           <li><span className="text-red-400 font-bold">1.</span> Browse the menu, click a pizza, customize and place your order</li>
-          <li><span className="text-red-400 font-bold">2.</span> Visit the <Link href="/register" onClick={handleClose} className="text-red-400 underline hover:text-red-300">Register</Link> to see your order come in — click <strong>Start Prep</strong> to send it to the kitchen</li>
+          <li><span className="text-red-400 font-bold">2.</span> Visit the <Link href="/oven" onClick={handleClose} className="text-red-400 underline hover:text-red-300">Register</Link> to see your order come in — click <strong>Start Prep</strong> to send it to the kitchen</li>
           <li><span className="text-red-400 font-bold">3.</span> Visit the <Link href="/monitor" onClick={handleClose} className="text-red-400 underline hover:text-red-300">Monitor</Link> to see the read-only kitchen display</li>
           <li><span className="text-red-400 font-bold">4.</span> Visit the <Link href="/kitchen" onClick={handleClose} className="text-red-400 underline hover:text-red-300">Kitchen</Link> to move your order through Prep → Oven → Boxing → Ready</li>
           <li><span className="text-red-400 font-bold">5.</span> Once Ready, the order closes out automatically (cash orders require payment first)</li>

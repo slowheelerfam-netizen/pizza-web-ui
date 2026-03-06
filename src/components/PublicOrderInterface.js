@@ -499,9 +499,6 @@ const handleCheckoutSubmit = async (e) => {
           </h1>
           {!showKitchenModals && (
             <nav className="flex items-center gap-4">
-              <a href="/register" className="text-sm font-bold text-indigo-600 hover:text-indigo-800">Register</a>
-              <a href="/kitchen" className="text-sm font-bold text-indigo-600 hover:text-indigo-800">Kitchen</a>
-              <a href="/monitor" className="text-sm font-bold text-indigo-600 hover:text-indigo-800">Monitor</a>
               <a href="/" className="text-sm font-bold text-indigo-600 hover:text-indigo-800">Home</a>
             </nav>
           )}
@@ -589,14 +586,20 @@ const handleCheckoutSubmit = async (e) => {
           </div>
         </div>
 
-        <footer className="flex items-center justify-center gap-4 bg-white p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
-          <button
-            onClick={() => setIsBuilderOpen(true)}
-            className="rounded-lg bg-blue-600 px-10 py-4 text-lg font-bold text-white shadow-lg transition-transform hover:bg-blue-700 active:scale-95"
-          >
-            Create New Order
-          </button>
-        </footer>
+          <footer className="flex items-center justify-between gap-4 bg-white p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+            <div className="flex items-center gap-3">
+              <a href="/register" className="text-sm font-bold text-indigo-600 hover:text-indigo-800">Register</a>
+              <a href="/kitchen" className="text-sm font-bold text-indigo-600 hover:text-indigo-800">Kitchen</a>
+              <a href="/oven" className="text-sm font-bold text-indigo-600 hover:text-indigo-800">Oven</a>
+              <a href="/monitor" className="text-sm font-bold text-indigo-600 hover:text-indigo-800">Monitor</a>
+            </div>
+            <button
+              onClick={() => setIsBuilderOpen(true)}
+              className="rounded-lg bg-blue-600 px-10 py-4 text-lg font-bold text-white shadow-lg transition-transform hover:bg-blue-700 active:scale-95"
+            >
+              Create New Order
+            </button>
+          </footer>
 
         {isBuilderOpen && (
           <PizzaBuilderModal
